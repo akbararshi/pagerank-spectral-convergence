@@ -1,125 +1,70 @@
-# PageRank Spectral Convergence: Adaptive Tactical Match Intelligence
+# Beyond 0.85: Adaptive PageRank Damping Factors for Small-Scale Networks
 
-This repository documents a multi-phase computer science research pipeline, moving from an empirical scaling experiment (**v1-experimental-framework**) into a production-grade, API-driven visual intelligence server (**v2-dynamic-football-engine**). The platform optimizes Google's PageRank algorithm to evaluate structural influence within dynamic multi-agent passing networks, shifting away from rigid static parameters to calculate fluid, absolute volume-weighted network models natively in Python.
+This repository contains the official, fully reproducible implementation for the computational models presented in the accompanying manuscript. The framework evaluates dynamic scaling systems for PageRank damping factor configurations inside small-scale tactical sports networks.
+
+The project introduces a **Macroscopic Sigmoid Governor** to dynamically adapt damping parameters between \(0.85\) and \(0.98\) based on structural graph density, counteracting possession-recycling biases in competitive team passing networks.
 
 ---
 
-##  System Architectural Evolution (v1 vs v2)
+## Technical Specifications
 
-| Engineering Vector | v1 (The Experimental Framework) | v2 (The Live Automated Engine) |
+| Dependency Component | Requirement Specification | Purpose within Pipeline |
 | :--- | :--- | :--- |
-| **Primary Goal** | Benchmarking PageRank limits on graphs from 10 to 5,000 nodes | Live tactical match analysis using real-world football datasets |
-| **Data Ingestion** | Hardcoded matrix buffers entered manually into code files | Automated live telemetry tracking via the StatsBomb API |
-| **Damping Factor (alpha)** | Manual testing across static bounds (alpha = 0.50 to alpha = 0.99) | Automated Macroscopic Sigmoid Governor mapping match density |
-| **Scoring Formula** | Relative percentage-share probability matrices | Absolute weights scaled by player-specific outbound passes |
-| **User Interface** | Terminal-driven test script for scalability logging | Full-stack interactive Streamlit web app with autocomplete search |
-| **Visual Analytics** | Static numeric text charts | Native Streamlit bar charts paired with a visual Matplotlib network map |
+| **Python Version** | Python 3.8 or higher | Base runtime environment |
+| **NumPy** | Latest stable release | Matrix vector computations |
+| **Pandas** | Latest stable release | Structured event frame handling |
+| **SciPy** | Latest stable release | Sparse network optimizations |
+| **NetworkX** | Latest stable release | Graph construction and metric extraction |
+| **Matplotlib** | Latest stable release | Visual performance chart rendering |
+| **StatsBombPy** | Latest stable release | Public match event stream access layer |
 
 ---
 
-## Project Repository Schema
+## Project Repository Architecture
 
-```text
-pagerank-spectral-convergence/
-├── v1-experimental-framework/
-│   ├── data/
-│   │   ├── experiment_results.json          # Logged iteration metrics tracking convergence outputs
-│   │   ├── simple_graphs.py                 # Synthetic matrix graph generators (Star and Spider-Trap)
-│   │   ├── spider_trap_convergence_chart.png # Vector plot charting computation lag in cyclic traps
-│   │   └── star_graph_convergence_chart.png  # Vector plot charting scale convergence on hub topologies
-│   └── src/
-│       ├── engine.py                        # Matrix calculation algorithms testing bounds from α=0.50 to α=0.99
-│       ├── generate_plot.py                 # Data visualizer pipeline converting JSON outputs to PNG charts
-│       └── main.py                          # Master execution script orchestrating the simulation loop
-│
-├── v2-dynamic-football-engine/
-│   ├── data/
-│   │   └── fetcher.py               # StatsBomb API ingestion layer and event log pipeline cleaner
-│   └── engine/
-│       ├── adaptive_pagerank.py     # Vectorized linear algebra engine housing the Sigmoid Governor
-│       └── app.py                   # Responsive Streamlit analytical app with manual 2026 sandbox mode
-│
-├── .gitignore                       # Environment tracking file to exclude python system cache artifacts
-├── README.md                        # Master portfolio overview and documentation spine
-└── requirements.txt                 # Unified repository external library dependency configuration registry
+The workspace layout separates core algorithm computation pipelines from outputs:
+
+pagerank-spectral-convergence/     <-- Main Workspace Root
+├── .gitignore                      <-- Git environment exclusion rules
+├── README.md                       <-- Replication documentation
+├── requirements.txt                <-- Python environment requirements
+├── adaptive-pagerank-networks/     <-- Core framework package
+│   ├── adaptive_dynamic_engine/
+│   │   ├── adaptive_football_engine.py  <-- Runs adaptive damping engine applied specifically to football scenarios
+│   │   ├── adaptive_main.py             <-- Uses adaptive damping engine code to output required experiment results
+│   │   └── adaptive_pagerank.py         <-- The core adaptive pagerank code
+│   ├── output/
+│   │   ├── adaptive_experiment_results.json    <--- Adaptive pagerank experimental results
+│   │   ├── experiment_results.json             <--- Standard pagerank experimental results
+│   │   ├── football_experimental_results.json  <-- Real match experimental results- shows metrics such as player dependency and score in both standard and adaptive pagerank
+│   │   ├── scalability_convergence_curves.pdf <-- Visual performance curves drawing comparisons between standard and proposed adaptive pagerank
+│   │   └── simple_graphs.py                   <--- Cyclic defensive loop and central playmaker hub network definitions
+│   ├── standard_pagerank/
+│   │   ├── standard_main.py             <-- Uses standard pagerank to output desired experiment results
+│   │   └── standard_pagerank_engine.py  <-- The core pagerank code
+│   ├── football_experimental_results.py    <--- Runs and formats real match football experimental: Stores output in output/football_experimental_results.json
+│   ├── generate_plot.py                 
+│   └── reproduce.py                     <-- Master execution script
+```
 ```
 
 ---
 
-## 🔬 Phase 1 Deep-Dive: Synthetic Graph Scale Testing
+## Replication and Execution
 
-The **v1-experimental-framework** serves as the theoretical mathematical foundation for this portfolio. Before processing real-world sports logs, a simulation environment was constructed to test the convergence behavior of the PageRank algorithm on networks scaled from 10 up to 5,000 nodes using custom topology builders (`data/simple_graphs.py`).
+To execute the entire simulation matrix, verify system convergence parameters, and regenerate all analytical graph assets from scratch, navigate to the framework folder and run the master script:
 
-Logging these simulation metrics into `data/experiment_results.json` surfaced a critical behavioral anomaly regarding high-damping factors:
-
-NOTE: This framework replaces the standard static damping factor (alpha = 0.85) with a dynamic global damping parameter ($\mathcal{D}_{\text{global}}$) calculated using our Sigmoid Governor engine.
-
-### 1. The Small-Network Signal Flattening Problem
-Google’s standard damping factor (alpha = 0.85), while optimal for massive web crawling, introduces severe normalization distortions in smaller systems (like an 11-node team matrix). It flattens out mathematical variance, stripping key playmaker hubs of their true importance.
-
-### 2. The High-Damping Structural Bottleneck
-To preserve localized network details, experiments were conducted by manually raising the variable close to its limit (alpha = 0.50 up to alpha = 0.99). While raising alpha = 0.99 successfully isolated hub significance, it introduced an exponential computational lag during power iterations. 
-
-Empirical testing exposed a **Graph Density Convergence Divergence**: inside a tight 1,000-node cyclic spider trap, the calculation was severely dragged out to **757 iteration loops** to reach stability. However, when scaled to 5,000 nodes, the sheer length of the linear distribution chain thinned out vector differentials, allowing the system to pass tolerance thresholds earlier at **597 iteration loops**.
-
-Mapping these performance boundaries demonstrated that small networks require a dynamic, automated solution rather than a hardcoded fixed variable—directly driving the creation of the **v2 Sigmoid Governor**.
-
----
-
-## 🧬 Phase 2 Mathematics: Dynamic Matrix Calibration
-
-To resolve the boundary distortions and computational bottlenecks isolated in Phase 1, the **v2-dynamic-football-engine** replaces fixed variables with a dynamic, two-tier network optimization model.
-
-### 1. The Macroscopic Sigmoid Governor
-Instead of utilizing an arbitrary, hardcoded damping constant (alpha = 0.85), the v2 engine reads the overall connectivity density of the passing network and automatically adjusts the baseline damping factor ($\mathcal{D}_{\text{global}}$) using a custom logistic sigmoid curve:
-
-$$
-\mathcal{D}_{\text{global}} = 0.85 + \frac{0.13}{1 + \exp\left(-10 \cdot \left(\text{Density} - 0.45\right)\right)}
-$$
-
-
-This math ensures the algorithm adapts to the game state: it automatically dampens low-density vertical systems (like direct long-ball teams) to filter out noise, while scaling up to a ceiling of **0.98** for highly dense, technical possession systems to preserve passing signals.
-
-### 2. Player-Specific Absolute Outbound Weighting
-Traditional PageRank yields relative percentage shares that add up to 1.0. This creates a severe distortion where a defender in a low-possession team can generate a higher relative rank score than a master playmaker in a high-volume team simply because their local network pool is smaller.
-
-To fix this sample-size distortion, the relative stationary distribution values $v_i$ are scaled into an absolute evaluation matrix weighted by each individual player's outbound completed pass volume:
-
-$$
-\text{Weighted Score}_i = v_i \cdot (\text{Absolute Outbound Passes}_i)
-$$
-
-
-This shifts the preference directly toward high-volume distribution anchors (like center-backs and defensive midfielders recycling possession) over isolated attacking destination nodes.
-
----
-
-## 🔧 Local Environment Installation & System Execution
-
-To deploy and execute this data analytics pipeline locally, complete the following environment configuration sequence:
-
-### 1. Ingest Core Dependencies
-Ensure the terminal path is pointing to the main root project directory and install the pre-configured requirements package:
 ```bash
-pip install -r requirements.txt
+cd adaptive-pagerank-networks
+python reproduce.py
 ```
 
-### 2. Launch the Production Application Server
-Navigate into the production workspace directory tree and fire up the full-stack Streamlit engine utilizing local environment routing flags:
-```bash
-cd v2-dynamic-football-engine
-PYTHONPATH=. python3 -m streamlit run engine/app.py
-```
+### System Processing Workflow:
+1. **Console Allocation Tables:** The script builds adjacent passing matrices using public 2011 UEFA Champions League dataset streams and prints comparative baseline tables.
+2. **Dynamic Data Tracking:** The system solves the Sigmoid Governor bounds, outputting player shares and dependency rankings directly to `output/football_experimental_results.json`.
+3. **Visualization Generation:** The script triggers the visualization layout layer, exporting performance scalability tracking data to `output/scalability_convergence_curves.pdf`.
 
 ---
 
-## 🎯 Production Validation Match Fixtures
-
-Query these real-world historical match profiles using the new predictive autocomplete search fields to verify the algorithm's tactical metrics:
-
-- **Germany vs. Scotland (Euro 2024 - Opening Match):** Validates the cross-network volume weighting matrix. The formula successfully overrides low-volume defensive nodes to crown **Toni Kroos** as the absolute global match MVP, matching an official record of 101 completed passes.
-- **Barcelona vs. Juventus (UCL Final 2015):** Validates the Macroscopic Sigmoid Governor. The engine detects the high fluid sequence density of the match to scale the baseline damping coefficient to its mathematical maximum (**0.977**). The framework isolates the true structural engine room of Barcelona's possession triangles, crowning right-back **Dani Alves** as the absolute network MVP.
-- **Argentina vs. France (World Cup 2018 - Round of 16):** Validates the structural bottleneck indicators. The pipeline successfully flags direct vertical attackers like **Kylian Mbappé** with elevated Bottleneck Indices (1.84) while mapping Argentina's high-volume, flat lateral backline passing circuits.
-
-
-
+## Double-Blind Peer Review Compliance
+This workspace is structurally scrubbed of identifying information. It contains no developer names, institutional metadata, or local computer directory paths. All paths are resolved dynamically relative to the execution root.

@@ -1,0 +1,61 @@
+{
+    "calculated_damping_factor": 0.9768,
+    "structural_nexus_hub": "Xavier Hern\u00e1ndez Creus",
+    "roster_metrics": {
+        "Xavier Hern\u00e1ndez Creus": {
+            "standard_share": 0.1085,
+            "adaptive_score": 0.1868,
+            "dependency_score": 0.2643
+        },
+        "Andr\u00e9s Iniesta Luj\u00e1n": {
+            "standard_share": 0.1075,
+            "adaptive_score": 0.1389,
+            "dependency_score": 0.1408
+        },
+        "Lionel Andr\u00e9s Messi": {
+            "standard_share": 0.1027,
+            "adaptive_score": 0.1291,
+            "dependency_score": 0.1244
+        },
+        "Sergio Busquets i Burgos": {
+            "standard_share": 0.1075,
+            "adaptive_score": 0.1049,
+            "dependency_score": 0.0
+        },
+        "Daniel Alves da Silva": {
+            "standard_share": 0.0852,
+            "adaptive_score": 0.089,
+            "dependency_score": 0.0213
+        },
+        "Javier Alejandro Mascherano": {
+            "standard_share": 0.0984,
+            "adaptive_score": 0.083,
+            "dependency_score": 0.0
+        },
+        "Gerard Piqu\u00e9 Bernab\u00e9u": {
+            "standard_share": 0.0877,
+            "adaptive_score": 0.0732,
+            "dependency_score": 0.0
+        },
+        "Eric-Sylvain Bilal Abidal": {
+            "standard_share": 0.0818,
+            "adaptive_score": 0.0769,
+            "dependency_score": 0.0
+        },
+        "Pedro Eliezer Rodr\u00edguez": {
+            "standard_share": 0.0859,
+            "adaptive_score": 0.0482,
+            "dependency_score": 0.0
+        },
+        "V\u00edctor Vald\u00e9s Arribas": {
+            "standard_share": 0.0495,
+            "adaptive_score": 0.036,
+            "dependency_score": 0.0
+        },
+        "David Villa S\u00e1nchez": {
+            "standard_share": 0.0852,
+            "adaptive_score": 0.034,
+            "dependency_score": 0.0
+        }
+    }
+}

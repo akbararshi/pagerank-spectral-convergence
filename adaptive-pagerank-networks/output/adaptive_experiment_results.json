@@ -1,0 +1,68 @@
+{
+    "adaptive_core": {
+        "spider_trap": {
+            "11": {
+                "graph_density_rho": 0.1,
+                "calculated_damping_factor": 0.8538,
+                "convergence_loops": 77
+            },
+            "50": {
+                "graph_density_rho": 0.020408,
+                "calculated_damping_factor": 0.8517,
+                "convergence_loops": 49
+            },
+            "100": {
+                "graph_density_rho": 0.010101,
+                "calculated_damping_factor": 0.8516,
+                "convergence_loops": 62
+            },
+            "500": {
+                "graph_density_rho": 0.002004,
+                "calculated_damping_factor": 0.8515,
+                "convergence_loops": 52
+            },
+            "1000": {
+                "graph_density_rho": 0.001001,
+                "calculated_damping_factor": 0.8514,
+                "convergence_loops": 48
+            },
+            "5000": {
+                "graph_density_rho": 0.0002,
+                "calculated_damping_factor": 0.8514,
+                "convergence_loops": 38
+            }
+        },
+        "star_graph": {
+            "11": {
+                "graph_density_rho": 0.181818,
+                "calculated_damping_factor": 0.8583,
+                "convergence_loops": 94
+            },
+            "50": {
+                "graph_density_rho": 0.04,
+                "calculated_damping_factor": 0.8521,
+                "convergence_loops": 91
+            },
+            "100": {
+                "graph_density_rho": 0.02,
+                "calculated_damping_factor": 0.8517,
+                "convergence_loops": 91
+            },
+            "500": {
+                "graph_density_rho": 0.004,
+                "calculated_damping_factor": 0.8515,
+                "convergence_loops": 91
+            },
+            "1000": {
+                "graph_density_rho": 0.002,
+                "calculated_damping_factor": 0.8515,
+                "convergence_loops": 91
+            },
+            "5000": {
+                "graph_density_rho": 0.0004,
+                "calculated_damping_factor": 0.8514,
+                "convergence_loops": 91
+            }
+        }
+    }
+}
