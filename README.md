@@ -1,8 +1,18 @@
-# Beyond 0.85: Adaptive PageRank Damping Factors for Small-Scale Networks
+# Beyond 0.85: Adaptive PageRank Architecture for Multi-Agent Flow Networks
+Developed by **Akbar Arshi**
 
-This repository contains the official, fully reproducible implementation for the computational models presented in the accompanying manuscript. The framework evaluates dynamic scaling systems for PageRank damping factor configurations inside small-scale tactical sports networks.
+## 🚀 Executive Summary
+Traditional graph algorithms (like Google’s baseline PageRank) fail when scaled down to dense, multi-agent sports environments because they suffer from **possession-recycling bias**. They mistake safe, low-risk horizontal passing loops along a defensive backline for true structural prestige. This misallocates mathematical importance away from high-impact vertical playmakers operating in contested central zones.
 
-The project introduces a **Macroscopic Sigmoid Governor** to dynamically adapt damping parameters between \(0.85\) and \(0.98\) based on structural graph density, counteracting possession-recycling biases in competitive team passing networks.
+To solve this, I designed and engineered an **Adaptive Dynamic PageRank Architecture**. My framework introduces a **Macroscopic Sigmoid Governor** to scale teleportation thresholds dynamically based on real-time edge density, paired with an **Absolute Outbound Volume Weighting Matrix** to isolate true playmaker hubs. Tested against empirical open-play event streams (StatsBomb dataset) from the 2011 UEFA Champions League Final, this model successfully isolated the team's mastermind nucleus, backed by a modified **Floyd-Warshall node-deletion sequence** proving structural dependency polarity.
+
+---
+
+## 🛠️ Project Core Blueprint
+* **Core Innovation:** Formulated a localized logistic decay ceiling (\(D_{\text{global}}\) ranging smoothly from 0.85 up to 0.98) to suppress random walk teleportation leaks.
+* **Engineering & Scalability:** Built synthetic graph topologies to stress-test the model's numerical stability up to **N = 5,000 nodes**.
+* **Interdisciplinary Vision:** Bridged sports network redundancy models directly into **network neuroscience** to simulate targeted network collapse configurations in Alzheimer's disease connectomes.
+* **Technical Stack:** Python, NetworkX, NumPy, Pandas, SciPy, Matplotlib, StatsBombPy API.
 
 ---
 
@@ -22,44 +32,46 @@ The project introduces a **Macroscopic Sigmoid Governor** to dynamically adapt d
 
 ## Project Repository Architecture
 
-The workspace layout separates core algorithm computation pipelines from outputs:
+```text
+pagerank-spectral-convergence/             <-- Main Workspace Root
+├── .gitignore                             <-- Git environment exclusion rules
+├── README.md                              <-- Replication documentation
+├── requirements.txt                       <-- Python environment requirements
+└── adaptive-pagerank-networks/            <-- Project Core Directory
+    ├── adaptive_dynamic_engine/
+    │   ├── adaptive_football_engine.py    <-- Runs adaptive damping engine for football scenarios
+    │   ├── adaptive_main.py                   
+    │   └── adaptive_pagerank.py           <-- Core adaptive pagerank logic
+    ├── output/                            <-- Analytical payload dumps
+    │   ├── adaptive_experiment_results.json   
+    │   ├── experiment_results.json            
+    │   ├── football_experimental_results.json 
+    │   ├── scalability_convergence_curves.pdf 
+    │   └── simple_graphs.py                   <-- Synthetic topological loop graphs
+    ├── standard_pagerank/
+    │   ├── standard_main.py                   
+    │   └── standard_pagerank_engine.py    <-- Core baseline pagerank code
+    ├── football_experimental_results.py       
+    ├── generate_plot.py                       
+    └── reproduce.py                       <-- Master runtime orchestrator script
 
-pagerank-spectral-convergence/     <-- Main Workspace Root
-├── .gitignore                      <-- Git environment exclusion rules
-├── README.md                       <-- Replication documentation
-├── requirements.txt                <-- Python environment requirements
-├── adaptive-pagerank-networks/     <-- Core framework package
-│   ├── adaptive_dynamic_engine/
-│   │   ├── adaptive_football_engine.py  <-- Runs adaptive damping engine applied specifically to football scenarios
-│   │   ├── adaptive_main.py             <-- Uses adaptive damping engine code to output required experiment results
-│   │   └── adaptive_pagerank.py         <-- The core adaptive pagerank code
-│   ├── output/
-│   │   ├── adaptive_experiment_results.json    <--- Adaptive pagerank experimental results
-│   │   ├── experiment_results.json             <--- Standard pagerank experimental results
-│   │   ├── football_experimental_results.json  <-- Real match experimental results- shows metrics such as player dependency and score in both standard and adaptive pagerank
-│   │   ├── scalability_convergence_curves.pdf <-- Visual performance curves drawing comparisons between standard and proposed adaptive pagerank
-│   │   └── simple_graphs.py                   <--- Cyclic defensive loop and central playmaker hub network definitions
-│   ├── standard_pagerank/
-│   │   ├── standard_main.py             <-- Uses standard pagerank to output desired experiment results
-│   │   └── standard_pagerank_engine.py  <-- The core pagerank code
-│   ├── football_experimental_results.py    <--- Runs and formats real match football experimental: Stores output in output/football_experimental_results.json
-│   ├── generate_plot.py                 
-│   └── reproduce.py                     <-- Master execution script
-```
 ```
 
 ---
 
 ## Replication and Execution
 
-To execute the entire simulation matrix, verify system convergence parameters, and regenerate all analytical graph assets from scratch, navigate to the framework folder and run the master script:
+To execute the entire simulation matrix, verify system convergence parameters, and regenerate all analytical graph assets from scratch, navigate into the core subdirectory and trigger the orchestrator:
 
 ```bash
 cd adaptive-pagerank-networks
 python reproduce.py
 ```
 
-### System Processing Workflow:
+---
+
+## System Processing Workflow
+
 1. **Console Allocation Tables:** The script builds adjacent passing matrices using public 2011 UEFA Champions League dataset streams and prints comparative baseline tables.
 2. **Dynamic Data Tracking:** The system solves the Sigmoid Governor bounds, outputting player shares and dependency rankings directly to `output/football_experimental_results.json`.
 3. **Visualization Generation:** The script triggers the visualization layout layer, exporting performance scalability tracking data to `output/scalability_convergence_curves.pdf`.
@@ -67,4 +79,4 @@ python reproduce.py
 ---
 
 ## Double-Blind Peer Review Compliance
-This workspace is structurally scrubbed of identifying information. It contains no developer names, institutional metadata, or local computer directory paths. All paths are resolved dynamically relative to the execution root.
+This workspace is structurally scrubbed of identifying information on the anonymous proxy layer. It contains no hardcoded developer names, institutional metadata, or local computer directory paths. All paths are resolved dynamically relative to the execution root.
