@@ -84,4 +84,6 @@ This repository contains the complete implementation and replication scripts for
 * **Scope:** Generative AI tools were utilized strictly for structural scaffolding and workflow optimization within the data orchestration layer.
 * **Target Scripts:** The utility script `generate_plot.py` handles input parsing, OS path validation (`os.path.join`), and initial graph configurations via `matplotlib.pyplot`. These non-analytical operations were assisted by AI to facilitate automated pipeline testing.
 * **Verification:** Every logical construct, exception threshold, and layout output was audited, refactored, and execution-verified by the author. The data processing and analysis results presented in the manuscript are entirely determined by the custom code logic.
+* **v2/app.py (Web Application Layer):** This file was scaffolded using generative AI tools to establish a web application interface designed to demonstrate system scalability. This front-end application layer operates completely independently of the paper's core data-processing pipeline. It does not generate, process, or alter any of the empirical primary research data or figures presented in the manuscript.
+
 
