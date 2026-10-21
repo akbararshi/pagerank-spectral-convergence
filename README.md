@@ -76,7 +76,4 @@ python reproduce.py
 2. **Dynamic Data Tracking:** The system solves the Sigmoid Governor bounds, outputting player shares and dependency rankings directly to `output/football_experimental_results.json`.
 3. **Visualization Generation:** The script triggers the visualization layout layer, exporting performance scalability tracking data to `output/scalability_convergence_curves.pdf`.
 
----
 
-## Double-Blind Peer Review Compliance
-This workspace is structurally scrubbed of identifying information on the anonymous proxy layer. It contains no hardcoded developer names, institutional metadata, or local computer directory paths. All paths are resolved dynamically relative to the execution root.
