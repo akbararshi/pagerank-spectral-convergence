@@ -1,11 +1,4 @@
-"""
-Adaptive PageRank Automated Plot Generation Engine
-Submission Code Artifact for the Journal of High School Computer Science (JHCS)
-
-This script reads from both experiment_results.json and adaptive_experiment_results.json
-to reconstruct Figure 1 inside: output/scalability_convergence_curves.pdf
-"""
-
+#AI Disclosure: This data-loading and plotting script was scaffolded with the assistance of generative AI to establish robust file pathing and input validation. All logical structures, error codes, and functional outputs were manually reviewed, modified, and verified by the author.
 import os
 import json
 import sys
@@ -52,7 +45,7 @@ def main():
         print("Please check that your running engines output both topologies exactly as shown in the data files.")
         sys.exit(1)
 
-    # 4. Print out a raw text matrix grid to verify numbers match Table II in your paper
+    # 4. Print out a raw text matrix grid to cross-check if numbers match Table II in paper
     print("\n==================================================================")
     print("                    NUMERICAL REPLICATION MATRIX CHECK            ")
     print("==================================================================")
@@ -61,7 +54,7 @@ def main():
         print(f"{dim:<12}{standard_spider_trap[i]:<14}{adaptive_spider_trap[i]:<14}{standard_star_graph[i]:<12}{adaptive_star_graph[i]:<12}")
     print("==================================================================\n")
 
-    # 5. Initialize publication-quality matplotlib layout properties
+    # Initialize publication-quality matplotlib layout properties
     plt.figure(figsize=(7, 5.5))
     plt.rc('font', family='serif') 
     plt.grid(True, which="both", linestyle="--", alpha=0.5)

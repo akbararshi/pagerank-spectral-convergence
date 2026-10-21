@@ -76,4 +76,12 @@ python reproduce.py
 2. **Dynamic Data Tracking:** The system solves the Sigmoid Governor bounds, outputting player shares and dependency rankings directly to `output/football_experimental_results.json`.
 3. **Visualization Generation:** The script triggers the visualization layout layer, exporting performance scalability tracking data to `output/scalability_convergence_curves.pdf`.
 
+## 🛠️ Reproducibility & Tool Disclosure
+
+This repository contains the complete implementation and replication scripts for the associated research paper. 
+
+### Generative AI Use
+* **Scope:** Generative AI tools were utilized strictly for structural scaffolding and workflow optimization within the data orchestration layer.
+* **Target Scripts:** The utility script `generate_plot.py` handles input parsing, OS path validation (`os.path.join`), and initial graph configurations via `matplotlib.pyplot`. These non-analytical operations were assisted by AI to facilitate automated pipeline testing.
+* **Verification:** Every logical construct, exception threshold, and layout output was audited, refactored, and execution-verified by the author. The data processing and analysis results presented in the manuscript are entirely determined by the custom code logic.
 

@@ -33,7 +33,7 @@ def run_matrix_power_iteration(nodes_count, connection_graph, damping_coeff=0.85
         if vector_delta < precision:
             print(f"--> Matrix stabilized at state equilibrium in {cycle + 1} cycles.\n")
             return next_vector_p, cycle + 1
-        #  Overwrite the current scores with the next iteration of scores to prepare for the next round      
+        # Overwrite the current scores with the next iteration of scores to prepare for the next round      
         vector_p = next_vector_p
 
     print("--> Upper loop iteration cap reached.\n")

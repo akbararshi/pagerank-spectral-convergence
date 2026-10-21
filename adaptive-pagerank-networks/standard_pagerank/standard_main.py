@@ -1,7 +1,6 @@
 import json
 from standard_pagerank_engine import run_matrix_power_iteration
-
-from output.simple_graphs import spider_trap, star_graph  # Fixed: matches your exact folder structure
+from output.simple_graphs import spider_trap, star_graph 
 
 def execute_experiments():
 

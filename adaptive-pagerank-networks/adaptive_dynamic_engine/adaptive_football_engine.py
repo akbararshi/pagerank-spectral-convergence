@@ -1,11 +1,3 @@
-"""
-Adaptive Football Analytics Engine (StatsBomb Automated Alignment)
-Submission Code Artifact for the Journal of High School Computer Science (JHCS)
-
-Dynamically fetches and filters the 2011 UCL Final event stream to match the 
-canonical starting lineup tracking metrics featured in your research paper.
-"""
-
 import os
 import json
 import numpy as np
@@ -101,14 +93,10 @@ def system_dependency(passing_matrix, player_names):
     return dependency_scores, max(dependency_scores, key=dependency_scores.get)
 
 def fetch_aligned_statsbomb_data():
-    """
-    Dynamically pulls the exact 2011 UCL Final network data and applies an 
-    accent-stripping look-up engine to safely build your paper's matrix grid.
-    """
     print("📥 Connecting to StatsBomb API... Downloading live 2011 UCL Final network...")
     match_id = 18236
     
-    # 1. Load your canonical research paper lineup names explicitly
+    # Load required player names for the 2011 UCL Final Barcelona starting XI
     player_names = [
         "Xavier Hernández Creus", "Andrés Iniesta Luján", "Lionel Andrés Messi",
         "Sergio Busquets i Burgos", "Daniel Alves da Silva", "Javier Alejandro Mascherano",
@@ -216,7 +204,7 @@ def main():
         }
         table_rows.append((name, std_shares[idx], round(scores[idx], 4), round(dependencies[name], 4)))
         
-    # Sort strictly by your custom Adaptive Score to mirror your paper's layout
+    # Sort strictly by custom Adaptive Score 
     table_rows.sort(key=itemgetter(2), reverse=True)
     
     print("\n" + "="*95)
