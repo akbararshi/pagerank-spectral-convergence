@@ -46,7 +46,7 @@ HAS_CREDS = bool(os.environ.get("SB_USERNAME") and os.environ.get("SB_PASSWORD")
 
 from statsbombpy import sb  # noqa: E402  (must come after the credentials are in the environment)
 
-from engine.adaptive_football_engine import sports_adaptive_pagerank, system_dependency
+from engine.adaptive_pagerank import sports_adaptive_pagerank
 from data.fetcher import get_match_passing_matrix
 
 st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
@@ -506,81 +506,32 @@ def _total_efficiency(W: np.ndarray) -> float:
     return float((1.0 / D[off]).sum())  # unreachable pairs (inf) contribute 0
 
 
-@st.cache_data(ttl=3600, show_spinner=False, max_entries=24)
-def _statsbomb_pass_rows(match_id: int) -> list:
-    """Cache one match's event rows so both squads reuse the same download."""
-    events = sb.events(match_id=match_id)
-    return events.to_dict("records") if isinstance(events, pd.DataFrame) else list(events)
+def compute_dependency(matrix, players, passes_made, passes_recv, total_passes) -> list:
+    """How much does the team depend on each player? Remove the player from the passing network and measure the
+    share of the network's connectivity (total efficiency) that is lost. Returns a list sorted by loss, highest first."""
+    W = np.asarray(matrix, dtype=float)
+    n = len(players)
+    if n < 3:
+        return []
+    base = _total_efficiency(W)
+    if base <= 0:
+        return []
+    out = []
+    for i, p in enumerate(players):
+        reduced = np.delete(np.delete(W, i, axis=0), i, axis=1)
+        loss = max(0.0, 1.0 - _total_efficiency(reduced) / base)
+        involved = (float(passes_made[i]) + float(passes_recv[i])) / total_passes if total_passes else 0.0
+        out.append({"player": p, "loss": loss, "involved": min(involved, 1.0)})
+    return sorted(out, key=lambda d: d["loss"], reverse=True)
 
 
 @st.cache_data(ttl=3600, show_spinner=False, max_entries=64)
-def passing_matrix_for_window(match_id: int, squad: str, start_min: int, end_min: int,
-                              min_pass_per90: float):
-    """Build a completed-pass matrix for a selected match window, scaled to passes per 90."""
-    pass_rows = None
-    if match_id >= CUSTOM_ID_BASE:
-        record = custom_registry().get(match_id) or {}
-        pass_rows = record.get("pass_events")
-        if pass_rows is None:  # CSV imports have no event timestamps; use the full-match matrix
-            matrix, players = _custom_matrix(match_id, squad)
-            if min_pass_per90 > 0 and matrix.size:
-                matrix = matrix.copy()
-                matrix[matrix < min_pass_per90] = 0.0
-                active = (matrix.sum(axis=0) + matrix.sum(axis=1)) > 0
-                matrix = matrix[np.ix_(active, active)]
-                players = [player for player, keep in zip(players, active) if keep]
-            return matrix, players
+def analyze_team(match_id: int, squad: str):
+    """All per-team math in one cached call; returns plain data or None."""
+    if match_id >= CUSTOM_ID_BASE:  # imported match
+        matrix, players = _custom_matrix(match_id, squad)
     else:
-        pass_rows = _statsbomb_pass_rows(match_id)
-
-    completed = []
-    for row in pass_rows or []:
-        if row.get("team") != squad:
-            continue
-        minute = row.get("minute")
-        if minute is None or pd.isna(minute) or not (start_min <= float(minute) <= end_min):
-            continue
-        # Stored custom-event rows and statsbombpy rows use the same normalized keys.
-        passer = row.get("passer", row.get("player"))
-        recipient = row.get("recipient", row.get("pass_recipient"))
-        outcome = row.get("outcome", row.get("pass_outcome"))
-        if isinstance(passer, dict):
-            passer = passer.get("name")
-        if isinstance(recipient, dict):
-            recipient = recipient.get("name")
-        if isinstance(outcome, dict):
-            outcome = outcome.get("name")
-        if passer and recipient and (outcome is None or pd.isna(outcome) or outcome == ""):
-            completed.append((str(passer), str(recipient)))
-
-    players = sorted({player for pair in completed for player in pair})
-    if not players:
-        return np.zeros((0, 0)), []
-    index = {player: i for i, player in enumerate(players)}
-    raw = np.zeros((len(players), len(players)), dtype=float)
-    for passer, recipient in completed:
-        if OUTBOUND_AXIS == 0:
-            raw[index[recipient], index[passer]] += 1.0
-        else:
-            raw[index[passer], index[recipient]] += 1.0
-
-    window_minutes = max(float(end_min - start_min), 1.0)
-    matrix = raw * (90.0 / window_minutes)
-    if min_pass_per90 > 0:
-        matrix[matrix < min_pass_per90] = 0.0
-        active = (matrix.sum(axis=0) + matrix.sum(axis=1)) > 0
-        matrix = matrix[np.ix_(active, active)]
-        players = [player for player, keep in zip(players, active) if keep]
-    return matrix, players
-
-
-@st.cache_data(ttl=3600, show_spinner=False, max_entries=64)
-def analyze_team(match_id: int, squad: str, start_min: int = 0, end_min: int = 90,
-                 min_pass_per90: float = 0.0):
-    """All per-team math for the selected time window; returns plain data or None."""
-    matrix, players = passing_matrix_for_window(
-        match_id, squad, start_min, end_min, min_pass_per90
-    )
+        matrix, players = get_match_passing_matrix(match_id=match_id, team_name=squad)
     if len(players) == 0:
         return None
     players = list(players)
@@ -605,12 +556,7 @@ def analyze_team(match_id: int, squad: str, start_min: int = 0, end_min: int = 9
     weighted = {p: scores[p] * float(passes_made[p_index[p]]) for p in players}
     rows_sorted = sorted(roster, key=lambda x: weighted[x[0]], reverse=True)
     mvp_name = max(players, key=lambda p: weighted[p])
-    most_dependent_player, max_network_loss, dependency_scores = system_dependency(matrix, players)
-    dependency = {
-        "most_dependent_player": most_dependent_player,
-        "max_network_loss": max_network_loss,
-        "dependency_scores": dependency_scores,
-    }
+    dependency = compute_dependency(matrix, players, passes_made, passes_recv, total_passes)
     return {
         "matrix": matrix,
         "players": players,
@@ -709,7 +655,7 @@ def load_match_info(match_id: int, home: str, away: str):
         reg = custom_registry().get(match_id)
         if reg is None:
             raise RuntimeError("Imported match data not found (re-add it).")
-        return {"scoreboard": reg["scoreboard"], "tactics": reg["tactics"]}
+        return {"scoreboard": reg["scoreboard"], "tactics": reg["tactics"], "timeline": reg.get("timeline")}
     events = sb.events(match_id=match_id)
     try:
         scoreboard = _scoreboard_from_events(events, home, away)
@@ -719,7 +665,11 @@ def load_match_info(match_id: int, home: str, away: str):
         tactics = _tactics_from_events(events, (home, away))
     except Exception:
         tactics = {t: {"formation": None, "positions": {}} for t in (home, away)}
-    return {"scoreboard": scoreboard, "tactics": tactics}
+    try:
+        timeline = _timeline_from_events(events, (home, away))
+    except Exception:
+        timeline = None
+    return {"scoreboard": scoreboard, "tactics": tactics, "timeline": timeline}
 
 
 def get_tactics(match_id: int, squad: str, home: str, away: str) -> dict:
@@ -785,22 +735,148 @@ def _draw_pitch_v(ax):
     ax.scatter([40, 40, 40], [12, 60, 108], s=10, color="white", zorder=1)          # spots
 
 
-@st.cache_data(ttl=3600, show_spinner=False, max_entries=32)
-def network_png(match_id: int, squad: str, home: str, away: str, start_min: int = 0,
-                end_min: int = 90, min_pass_per90: float = 0.0) -> bytes:
-    """Passing network on a vertical green pitch, limited to the selected time window."""
-    a = analyze_team(match_id, squad, start_min, end_min, min_pass_per90)
-    matrix, players, scores = a["matrix"], a["players"], a["scores"]
-    valid_indexes = []
-    for index, player in enumerate(players):
-        if not player or pd.isna(player) or str(player).lower().strip() in ("nan", "none", ""):
-            continue
-        valid_indexes.append(index)
-    matrix = matrix[np.ix_(valid_indexes, valid_indexes)]
-    players = [players[index] for index in valid_indexes]
-    scores = {player: scores[player] for player in players}
+# --- TIME INTERVALS: the passing network for any slice of the match, never more than 11 players per team ---
+MAX_ON_PITCH = 11  # hard cap: a team never has more than 11 players on the pitch
+
+
+def _clock_series(df):
+    """Match clock in minutes. First-half stoppage time is folded into 45' and first-half extra time into 105',
+    so the clock only moves forward (otherwise 45+2 would overlap the start of the second half)."""
+    t = df["minute"].astype(float) + df["second"].fillna(0).astype(float) / 60.0
+    t = t.where(df["period"] != 1, np.minimum(t, 45.0))
+    return t.where(df["period"] != 3, np.minimum(t, 105.0))
+
+
+def _timeline_from_events(events, teams):
+    """Timed completed passes, substitutions and starters per team (small, cacheable). None if the data lacks times."""
+    need = {"type", "team", "player", "minute", "second", "period"}
+    if not need <= set(events.columns):
+        return None
+    ev = events[events["period"].isin([1, 2, 3, 4])]  # penalty shootouts excluded
+    if ev.empty:
+        return None
+    clock = _clock_series(ev)
+    out = {"end": float(clock.max()), "teams": {}}
+    p2 = clock[ev["period"] == 2]
+    out["reg_end"] = float(p2.max()) if len(p2) else out["end"]
+
+    has_rec = "pass_recipient" in ev.columns
+    no_outcome = ev["pass_outcome"].isna() if "pass_outcome" in ev.columns else pd.Series(True, index=ev.index)
+    if has_rec:
+        passes = ev[(ev["type"] == "Pass") & ev["player"].notna() & ev["pass_recipient"].notna() & no_outcome]
+    else:
+        passes = ev.iloc[0:0]
+    subs = ev[ev["type"] == "Substitution"] if "substitution_replacement" in ev.columns else ev.iloc[0:0]
+    xi = ev[ev["type"] == "Starting XI"]
+
+    for team in teams:
+        pt = passes[passes["team"] == team]
+        pass_list = sorted(zip(clock[pt.index].tolist(), pt["player"].tolist(), pt["pass_recipient"].tolist()))
+        sub_list = []
+        st_ = subs[subs["team"] == team]
+        for idx, row in zip(st_.index, st_.to_dict("records")):
+            on = row.get("substitution_replacement")
+            if isinstance(on, dict):
+                on = on.get("name")
+            if isinstance(on, str) and isinstance(row.get("player"), str):
+                sub_list.append((float(clock[idx]), row["player"], on))
+        starters = []
+        for row in xi[xi["team"] == team].to_dict("records"):
+            tac = row.get("tactics")
+            if isinstance(tac, dict):
+                starters = [(i.get("player") or {}).get("name") for i in tac.get("lineup", [])]
+                starters = [s for s in starters if s]
+        out["teams"][team] = {"passes": pass_list, "subs": sorted(sub_list), "starters": starters[:MAX_ON_PITCH]}
+    return out
+
+
+def get_timeline(match_id: int, home: str, away: str):
+    try:
+        return load_match_info(match_id, home, away).get("timeline")
+    except Exception:
+        return None
+
+
+def on_pitch(team_tl: dict, T: float) -> list:
+    """The players on the pitch at minute T: starters, with each substitute replacing the player he came on for.
+    Capped at 11 no matter what the data says."""
+    cur = list(team_tl["starters"])
+    for t, off, on in team_tl["subs"]:
+        if t <= T:
+            if off in cur:
+                cur[cur.index(off)] = on
+            elif len(cur) < MAX_ON_PITCH:
+                cur.append(on)
+    return cur[:MAX_ON_PITCH]
+
+
+def _interval_scores(M, nodes) -> dict:
+    """PageRank influence for this interval using your engine; falls back to pass-involvement share if it can't run."""
+    try:
+        sc = sports_adaptive_pagerank(M, nodes)[0]
+        out = {p: float(sc[p]) for p in nodes}
+        if not all(np.isfinite(v) for v in out.values()):
+            raise ValueError("non-finite scores")
+        return out
+    except Exception:
+        s = M.sum(axis=0) + M.sum(axis=1)
+        tot = float(s.sum()) or 1.0
+        return {p: float(s[i]) / tot for i, p in enumerate(nodes)}
+
+
+def _interval_data(match_id, squad, home, away, t0, t1):
+    """(matrix, nodes, scores, mvp, meta, analysis) for passes in [t0, t1] among the players on the pitch at t1."""
+    a = analyze_team(match_id, squad)
+    tl = get_timeline(match_id, home, away)
+    tt = ((tl or {}).get("teams") or {}).get(squad)
+    meta = {"timed": False, "t0": 0, "t1": None, "passes": 0, "n": 0}
+
+    if tt and tt["passes"]:
+        end = int(np.ceil(tl["end"]))
+        t1 = end if (t1 is None or t1 < 0 or t1 > end) else int(t1)
+        t0 = max(0, min(int(t0), t1))
+        window = [(s, d) for t, s, d in tt["passes"] if t0 <= t <= t1]
+        nodes = on_pitch(tt, t1) if tt["starters"] else []
+        if not nodes:  # no lineup data: the (at most) 11 most involved players inside the window
+            cnt = {}
+            for s, d in window:
+                cnt[s] = cnt.get(s, 0) + 1
+                cnt[d] = cnt.get(d, 0) + 1
+            nodes = [p for p, _ in sorted(cnt.items(), key=lambda kv: -kv[1])]
+        nodes = nodes[:MAX_ON_PITCH]
+        idx = {p: i for i, p in enumerate(nodes)}
+        M = np.zeros((len(nodes), len(nodes)))
+        for s, d in window:
+            if s in idx and d in idx and s != d:
+                if OUTBOUND_AXIS == 0:
+                    M[idx[d], idx[s]] += 1  # same orientation convention as the rest of the app
+                else:
+                    M[idx[s], idx[d]] += 1
+        scores = _interval_scores(M, nodes)
+        made = M.sum(axis=OUTBOUND_AXIS)
+        weighted = {p: scores[p] * float(made[i]) for i, p in enumerate(nodes)}
+        mvp = max(nodes, key=weighted.get) if nodes and M.sum() > 0 else None
+        meta.update(timed=True, t0=t0, t1=t1, passes=int(M.sum()), n=len(nodes))
+        return M, nodes, scores, mvp, meta, a
+
+    # No time data (e.g. a CSV import): full match, but still never more than 11 players
+    matrix, players, scores = a["matrix"], list(a["players"]), a["scores"]
+    if len(players) > MAX_ON_PITCH:
+        involvement = matrix.sum(axis=0) + matrix.sum(axis=1)
+        keep = sorted(np.argsort(-involvement)[:MAX_ON_PITCH])
+        matrix = matrix[np.ix_(keep, keep)]
+        players = [players[i] for i in keep]
+    mvp = a["mvp"][0] if a["mvp"][0] in players else None
+    meta.update(passes=int(matrix.sum()), n=len(players))
+    return matrix, players, scores, mvp, meta, a
+
+
+@st.cache_data(ttl=3600, show_spinner=False, max_entries=64)
+def network_png(match_id: int, squad: str, home: str, away: str, t0: int = 0, t1: int = -1):
+    """Passing network for minutes t0..t1 on a vertical green pitch: only the (max 11) players on the pitch at t1,
+    each at their formation slot. Returns (transparent PNG bytes, meta); cached."""
+    matrix, players, scores, mvp, meta, a = _interval_data(match_id, squad, home, away, t0, t1)
     n = len(players)
-    mvp = a["mvp"][0]
 
     # StatsBomb (x = length, y = width, right side = larger y) -> vertical plot (lateral = y, depth = x)
     placed = _place_players(players, get_tactics(match_id, squad, home, away)["positions"])
@@ -838,8 +914,6 @@ def network_png(match_id: int, squad: str, home: str, away: str, start_min: int 
     ax.scatter(xs, ys, s=sizes, c="#0f172a", edgecolors=rings, linewidths=2, zorder=4)
 
     for p, x, y, s in zip(players, xs, ys, sizes):
-        if not p or pd.isna(p) or str(p).lower().strip() in ("nan", "none", ""):
-            continue
         shown = a["display"].get(p, p)
         label = shown.split()[-1] if shown.split() else shown
         ax.text(x, y - np.sqrt(s / np.pi) * (86 / (FIG_W * 72)) - 1.2, label, color="white", fontsize=7, weight="bold",
@@ -858,7 +932,7 @@ def network_png(match_id: int, squad: str, home: str, away: str, start_min: int 
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=120, transparent=True)
     plt.close(fig)
-    return buf.getvalue()
+    return buf.getvalue(), meta
 
 
 # --- HTML HELPERS (one block each; colours come from CSS variables so they follow the theme) ---
@@ -936,35 +1010,19 @@ def mvp_card_html(squad, name, score, weighted):
 
 
 def dependency_card_html(a: dict) -> str:
-    """Render the dependency results returned by engine.adaptive_pagerank."""
-    dependency = a.get("dependency") or {}
-    player = dependency.get("most_dependent_player")
-    loss = dependency.get("max_network_loss")
-    scores = dependency.get("dependency_scores") or {}
-    if not player or loss is None:
+    dep = a.get("dependency") or []
+    if not dep:
         return ""
-
-    display_name = a["display"].get(player, player)
-    if isinstance(scores, dict):
-        ranked = sorted(scores.items(), key=lambda item: item[1], reverse=True)
-    else:
-        ranked = sorted(
-            ((item.get("player"), item.get("loss", 0.0)) for item in scores),
-            key=lambda item: item[1], reverse=True,
-        )
-    next_players = " · ".join(
-        f'{esc(a["display"].get(name, name))} {score * 100:.1f}%'
-        for name, score in ranked
-        if name != player
-    )
-    next_players = " · ".join(next_players.split(" · ")[:2])
+    name = lambda p: a["display"].get(p, p)
+    top = dep[0]
+    others = " · ".join(f"{esc(name(d['player']))} {d['loss'] * 100:.1f}%" for d in dep[1:3])
     return (
         '<div class="dep">'
         '<div class="k">🔗 Most depended-on player</div>'
-        f'<div class="nm">{esc(display_name)}</div>'
-        f'<div class="sub">Removing this player reduces the team network connectivity by '
-        f'<b>{loss * 100:.1f}%</b>.</div>'
-        + (f'<div class="sub2">Next: {next_players}</div>' if next_players else "")
+        f'<div class="nm">{esc(name(top["player"]))}</div>'
+        f'<div class="sub">Without them the team\'s passing network loses <b>{top["loss"] * 100:.1f}%</b> of its connectivity '
+        f'· involved in <b>{top["involved"] * 100:.0f}%</b> of all completed passes.</div>'
+        + (f'<div class="sub2">Next: {others}</div>' if others else "")
         + "</div>"
     )
 
@@ -1015,7 +1073,7 @@ def _parse_events_json(data: bytes) -> dict:
     events = json.loads(data)
     if not isinstance(events, list) or not all(isinstance(e, dict) for e in events):
         raise ValueError("Expected a JSON list of events (StatsBomb open-data format).")
-    counts, rows, order, pass_events = {}, [], [], []
+    counts, rows, order = {}, [], []
     for e in events:
         etype = (e.get("type") or {}).get("name")
         team = (e.get("team") or {}).get("name")
@@ -1028,8 +1086,9 @@ def _parse_events_json(data: bytes) -> dict:
             if team and player and rec and not p.get("outcome"):  # no outcome = completed
                 pair = counts.setdefault(team, {})
                 pair[(player, rec)] = pair.get((player, rec), 0) + 1
-                pass_events.append({"team": team, "minute": e.get("minute"), "passer": player,
-                                    "recipient": rec, "outcome": None})
+                rows.append({"type": "Pass", "team": team, "player": player, "minute": e.get("minute"),
+                             "second": e.get("second"), "period": e.get("period"),
+                             "pass_recipient": rec, "pass_outcome": None})
         if etype in ("Starting XI", "Shot", "Own Goal Against", "Substitution"):
             row = {"type": etype, "team": team, "player": player, "minute": e.get("minute"),
                    "second": e.get("second"), "period": e.get("period")}
@@ -1045,8 +1104,7 @@ def _parse_events_json(data: bytes) -> dict:
     teams = [t for t in order if t in counts][:2]
     if len(teams) < 2:
         raise ValueError("Couldn't find completed passes for two teams in that file.")
-    return {"kind": "json", "teams": teams, "counts": counts, "events": pd.DataFrame(rows),
-            "pass_events": pass_events}
+    return {"kind": "json", "teams": teams, "counts": counts, "events": pd.DataFrame(rows)}
 
 
 def _parse_passes_csv(data: bytes) -> dict:
@@ -1079,7 +1137,7 @@ def _parse_passes_csv(data: bytes) -> dict:
     counts = {}
     for (t, a, b), n in df.groupby([c_team, c_src, c_dst])["_n"].sum().items():
         counts.setdefault(t, {})[(a, b)] = float(n)
-    return {"kind": "csv", "teams": teams, "counts": counts, "events": None, "pass_events": None}
+    return {"kind": "csv", "teams": teams, "counts": counts, "events": None}
 
 
 @st.cache_data(show_spinner=False, max_entries=8)
@@ -1117,13 +1175,17 @@ def _build_custom(parsed: dict, home: str, away: str, date_str: str, comp: str, 
     else:
         scoreboard = (f"{int(gh)} - {int(ga)}", [], [], False) if gh is not None and ga is not None else None
         tactics = {t: {"formation": None, "positions": {}} for t in teams}
+    try:
+        timeline = _timeline_from_events(ev, teams) if ev is not None and len(ev) else None
+    except Exception:
+        timeline = None
     counts = {t: parsed["counts"].get(t, {}) for t in teams}
-    sig = repr((home, away, date_str, comp, scoreboard, sorted((t, sorted(c.items())) for t, c in counts.items())))
+    sig = repr((home, away, date_str, comp, scoreboard, sorted((t, sorted(c.items())) for t, c in counts.items()),
+                hashlib.sha1(repr(timeline).encode()).hexdigest()))
     cid = CUSTOM_ID_BASE + int(hashlib.sha1(sig.encode()).hexdigest()[:8], 16) % 90_000_000
     match = {"id": cid, "year": date_str[:4], "date": date_str, "home": home, "away": away, "custom": True,
              "label": f"{home} vs {away} ({date_str}) - {comp} [#{cid}]"}
-    return match, {"passes": counts, "pass_events": parsed.get("pass_events"),
-                   "scoreboard": scoreboard, "tactics": tactics}
+    return match, {"passes": counts, "scoreboard": scoreboard, "tactics": tactics, "timeline": timeline}
 
 
 def add_custom_match(parsed, home, away, date_str, comp, gh=None, ga=None) -> dict:
@@ -1300,20 +1362,55 @@ def pick_match(m: dict):
 
 # --- NETWORKS ROW: a fragment so the toggle only reruns this block ---
 @fragment
-def networks_row(match_id: int, teams: tuple, ok: tuple, start_min: int, end_min: int, min_pass_per90: float):
+def networks_row(match_id: int, teams: tuple, ok: tuple):
     if not st.toggle("Show passing networks", value=True, key=f"net_{match_id}"):
         return
+
+    t0, t1 = 0, -1
+    tl = get_timeline(match_id, teams[0], teams[1])
+    if tl:
+        tmax = int(np.ceil(tl["end"]))
+        reg = min(tmax, int(np.ceil(tl["reg_end"])))  # end of normal time (incl. stoppage)
+        init_key, ver_key = f"t_init_{match_id}", f"t_ver_{match_id}"
+        st.session_state.setdefault(init_key, (0, reg))
+        st.session_state.setdefault(ver_key, 0)
+
+        def _preset(lo, hi):  # a new slider key per preset, so the slider restarts at the preset without state clashes
+            st.session_state[init_key] = (lo, hi)
+            st.session_state[ver_key] += 1
+
+        b1, b2, b3 = st.columns(3, gap="small")
+        with b1:
+            keep_row()
+            st.button("First 30′", key=f"p30_{match_id}", on_click=_preset, args=(0, min(30, tmax)))
+        b2.button("First 60′", key=f"p60_{match_id}", on_click=_preset, args=(0, min(60, tmax)))
+        b3.button("Full 90′", key=f"p90_{match_id}", on_click=_preset, args=(0, reg))
+        t0, t1 = st.slider(
+            "Match time (minutes) — drag either handle for any interval",
+            0, tmax, value=st.session_state[init_key], step=1, format="%d min",
+            key=f"t_range_{match_id}_{st.session_state[ver_key]}",
+        )
+
+    metas = {}
     cols = st.columns(2, gap="small")
     for col, squad in zip(cols, teams):
         with col:
             team_row()
             if squad in ok:
-                st.image(network_png(match_id, squad, teams[0], teams[1], start_min, end_min, min_pass_per90))
+                png, metas[squad] = network_png(match_id, squad, teams[0], teams[1], int(t0), int(t1))
+                st.image(png)
             else:
                 callout("warn", f"No passing data for {esc(squad)}.")
+
+    if metas and all(m["timed"] for m in metas.values()):
+        detail = " · ".join(f"{esc(s)}: {m['n']} players, {m['passes']} passes" for s, m in metas.items())
+        st.caption(f"Passes from {t0}′ to {t1}′ among the players on the pitch at {t1}′ (never more than 11 per team) · {detail}")
+    elif metas:
+        st.caption("Full match, showing each team's 11 most-involved players (this match has no time data).")
     st.caption(
-        "Players at their starting-XI positions (or in a circle if no formation data), attacking up · node size = influence · "
-        "line width = passes between a pair (strongest links only) · gold ring = MVP"
+        "Players at their starting-XI positions (a substitute takes the slot of the player he replaced), attacking up · "
+        "node size = influence in this interval · line width = passes between a pair (strongest links only) · "
+        "gold ring = top weighted player · the tables below cover the full match"
     )
 
 
@@ -1526,43 +1623,6 @@ else:
     match_id = target["id"]
     teams = [target["home"], target["away"]]
 
-    is_csv_import = False
-    if match_id >= CUSTOM_ID_BASE:
-        custom_data = custom_registry().get(match_id) or {}
-        is_csv_import = custom_data.get("pass_events") is None
-
-    with st.sidebar:
-        st.markdown("### ⏱️ Dynamic Time-Binning Controls")
-        if is_csv_import:
-            st.info("This CSV has no event timestamps, so only full-match analysis is available.")
-            preset_chapter = "Full Match (Minutes 0-90)"
-            start_min, end_min = 0, 90
-        else:
-            preset_chapter = st.selectbox(
-                "Select Tactical Chapter Interval:",
-                ["Full Match (Minutes 0-90)",
-                 "Chapter 1: Opening Phase (Minutes 0-30)",
-                 "Chapter 2: Mid-Match Transitions (Minutes 31-61)",
-                 "Chapter 3: Late Game & Terminal Phase (Minutes 62-90)"],
-                key=f"time_bin_{match_id}",
-            )
-            if "Chapter 1" in preset_chapter:
-                start_min, end_min = 0, 30
-            elif "Chapter 2" in preset_chapter:
-                start_min, end_min = 31, 61
-            elif "Chapter 3" in preset_chapter:
-                start_min, end_min = 62, 90
-            else:
-                start_min, end_min = st.slider(
-                    "Custom Match Minutes Range:", 0, 90, (0, 90), key=f"custom_time_{match_id}"
-                )
-        min_pass_threshold = st.slider(
-            "Set Minimum Passes Per-90 Filter Threshold:",
-            min_value=0.0, max_value=10.0, value=2.0, step=0.5,
-            help="Pass links below this per-90 volume are removed before the network metrics are calculated.",
-            key=f"min_pass_threshold_{match_id}",
-        )
-
     try:
         info = load_match_info(match_id, teams[0], teams[1])
     except Exception:
@@ -1582,11 +1642,8 @@ else:
     )
 
     # Compute both squads once up front (cached; everything below reuses the results)
-    with st.spinner("Extracting time-binned passing data and analyzing networks..."):
-        analyses = {
-            squad: analyze_team(match_id, squad, start_min, end_min, min_pass_threshold)
-            for squad in teams
-        }
+    with st.spinner("Analyzing passing networks..."):
+        analyses = {squad: analyze_team(match_id, squad) for squad in teams}
     ok = tuple(s for s in teams if analyses[s] is not None)
 
     st.markdown('<div style="height:14px"></div>', unsafe_allow_html=True)
@@ -1602,7 +1659,7 @@ else:
             if a is not None:
                 st.markdown(
                     tiles_html([
-                        ("Passes / 90", f"{a['total_passes']:.1f}"),
+                        ("Team passes", f"{int(a['total_passes'])}"),
                         ("Density", f"{a['density']:.1%}"),
                         ("Centralization", f"{a['centralization']:.1%}"),
                     ]),
@@ -1610,7 +1667,7 @@ else:
                 )
 
     # Row 2: passing networks, side by side
-    networks_row(match_id, tuple(teams), ok, start_min, end_min, min_pass_threshold)
+    networks_row(match_id, tuple(teams), ok)
 
     # Row 3: metrics tables, side by side
     st.markdown('<div class="section">Player metrics</div>', unsafe_allow_html=True)
@@ -1629,9 +1686,8 @@ else:
             if note:
                 st.markdown(f'<div class="note-s">{note}</div>', unsafe_allow_html=True)
     st.caption(
-        f"Showing minutes {start_min}–{end_min}; passing volumes are scaled to a 90-minute rate and links below "
-        f"{min_pass_threshold:.1f} passes/90 are pruned. Weighted = influence share × completed outbound passes (rows are sorted by it). "
-        "Dependency = drop in global passing-network efficiency when that player is removed (computed by the adaptive PageRank module)."
+        "Weighted = influence share × the player's own completed outbound passes (rows are sorted by it). "
+        "Dependency = share of the passing network's connectivity (weighted global efficiency) lost if that player is removed."
     )
 
     # Row 4: bottleneck notes, below the networks and tables
