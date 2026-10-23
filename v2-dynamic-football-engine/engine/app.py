@@ -13,6 +13,10 @@ for _p in (APP_DIR, APP_DIR.parent):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
+root_workspace_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if root_workspace_path not in sys.path:
+    sys.path.insert(0, root_workspace_path)
+
 import datetime
 import difflib
 import hashlib
