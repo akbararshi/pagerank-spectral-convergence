@@ -1,8 +1,18 @@
 import os
+import sys
+
+# Force Python to read two directory levels up to find the root engine folder
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+    
+# If your module folder sits directly alongside the engine folder, this captures it:
+parent_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if parent_path not in sys.path:
+    sys.path.insert(0, parent_path)
 
 os.environ.setdefault("MPLBACKEND", "Agg")  # must be set before ANY matplotlib import (macOS GUI backend crashes off the main thread)
 
-import sys
 from pathlib import Path
 
 # Streamlit puts only the script's own folder on sys.path. If this file lives inside engine/ (or any subfolder),
@@ -12,10 +22,6 @@ APP_DIR = Path(__file__).resolve().parent
 for _p in (APP_DIR, APP_DIR.parent):
     if str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
-
-root_workspace_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if root_workspace_path not in sys.path:
-    sys.path.insert(0, root_workspace_path)
 
 import datetime
 import difflib
