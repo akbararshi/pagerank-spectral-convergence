@@ -17,6 +17,7 @@ import datetime
 import difflib
 import hashlib
 import html
+import importlib
 import io
 import json
 import re
@@ -46,8 +47,43 @@ HAS_CREDS = bool(os.environ.get("SB_USERNAME") and os.environ.get("SB_PASSWORD")
 
 from statsbombpy import sb  # noqa: E402  (must come after the credentials are in the environment)
 
-from engine.adaptive_football_engine import sports_adaptive_pagerank
-from data.fetcher import get_match_passing_matrix
+def _find_module(candidates, needed_name):
+    """Import the first candidate module that exists AND defines `needed_name`. A module that exists but fails on one of
+    its own imports (e.g. a missing pip package) is NOT skipped, so the real error still surfaces."""
+    tried = []
+    for mod in candidates:
+        try:
+            m = importlib.import_module(mod)
+        except ModuleNotFoundError as exc:
+            if exc.name and (mod == exc.name or mod.startswith(exc.name + ".")):
+                tried.append(mod)
+                continue
+            raise
+        if hasattr(m, needed_name):
+            return m
+        tried.append(f"{mod} (has no `{needed_name}`)")
+    raise ModuleNotFoundError(f"None of these provide `{needed_name}`: {', '.join(tried)}")
+
+
+try:
+    _engine = _find_module(
+        ("engine.adaptive_football_engine", "adaptive_football_engine", "engine.adaptive_pagerank", "adaptive_pagerank"),
+        "sports_adaptive_pagerank",
+    )
+    sports_adaptive_pagerank = _engine.sports_adaptive_pagerank
+    system_dependency = getattr(_engine, "system_dependency", None)  # your own dependency function, if the engine has one
+    _fetcher = _find_module(("data.fetcher", "fetcher"), "get_match_passing_matrix")
+    get_match_passing_matrix = _fetcher.get_match_passing_matrix
+except ImportError as _import_exc:
+    # Streamlit Cloud redacts error messages, so show what is actually wrong right in the page.
+    st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
+    st.error(f"Couldn't import your engine/data modules: {type(_import_exc).__name__}: {_import_exc}")
+    st.write("**App folder:**", str(APP_DIR))
+    st.write("**Files next to app.py:**", sorted(os.listdir(APP_DIR))[:40])
+    st.write("**Files in the parent folder:**", sorted(os.listdir(APP_DIR.parent))[:40])
+    st.caption("Fix: make sure your engine file and data/fetcher.py are committed and pushed, and that the names being "
+               "imported exist in them. Remove this diagnostic before going public.")
+    st.stop()
 
 st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
 
@@ -506,6 +542,44 @@ def _total_efficiency(W: np.ndarray) -> float:
     return float((1.0 / D[off]).sum())  # unreachable pairs (inf) contribute 0
 
 
+# Your engine's system_dependency(passing_matrix, player_names) returns the % drop in global network efficiency when each
+# player is removed. Set this to False if it returns fractions (0.12) instead of percentages (12.0).
+SYSTEM_DEPENDENCY_IS_PERCENT = True
+
+
+def _dependency_scores(raw, players) -> dict:
+    """Turn whatever system_dependency() returns into {player: value}."""
+    if isinstance(raw, tuple) and raw and isinstance(raw[0], (dict, list, tuple, np.ndarray)):
+        raw = raw[0]  # (scores, extra) -> scores
+    if isinstance(raw, dict):
+        return {k: float(v) for k, v in raw.items()}
+    seq = list(raw)
+    if seq and all(isinstance(x, (list, tuple)) and len(x) == 2 for x in seq):
+        return {k: float(v) for k, v in seq}
+    return {p: float(v) for p, v in zip(players, seq)}
+
+
+def engine_dependency(matrix, players, passes_made, passes_recv, total_passes):
+    """Dependency per player from the engine's own system_dependency(); falls back to the built-in version if the engine
+    has none or it fails. Returns (list sorted highest first, source)."""
+    if system_dependency is not None and len(players) >= 3:
+        try:
+            scores = _dependency_scores(system_dependency(np.asarray(matrix, dtype=float), list(players)), players)
+            idx = {p: i for i, p in enumerate(players)}
+            scale = 100.0 if SYSTEM_DEPENDENCY_IS_PERCENT else 1.0
+            out = []
+            for p, v in scores.items():
+                if p in idx and np.isfinite(v):
+                    i = idx[p]
+                    involved = (float(passes_made[i]) + float(passes_recv[i])) / total_passes if total_passes else 0.0
+                    out.append({"player": p, "loss": float(v) / scale, "involved": min(involved, 1.0)})
+            if out:
+                return sorted(out, key=lambda d: d["loss"], reverse=True), "engine"
+        except Exception:
+            pass
+    return compute_dependency(matrix, players, passes_made, passes_recv, total_passes), "built-in"
+
+
 def compute_dependency(matrix, players, passes_made, passes_recv, total_passes) -> list:
     """How much does the team depend on each player? Remove the player from the passing network and measure the
     share of the network's connectivity (total efficiency) that is lost. Returns a list sorted by loss, highest first."""
@@ -556,7 +630,7 @@ def analyze_team(match_id: int, squad: str):
     weighted = {p: scores[p] * float(passes_made[p_index[p]]) for p in players}
     rows_sorted = sorted(roster, key=lambda x: weighted[x[0]], reverse=True)
     mvp_name = max(players, key=lambda p: weighted[p])
-    dependency = compute_dependency(matrix, players, passes_made, passes_recv, total_passes)
+    dependency, dep_source = engine_dependency(matrix, players, passes_made, passes_recv, total_passes)
     return {
         "matrix": matrix,
         "players": players,
@@ -567,6 +641,7 @@ def analyze_team(match_id: int, squad: str):
         "weighted": weighted,
         "mvp": (mvp_name, scores[mvp_name], weighted[mvp_name]),
         "dependency": dependency,
+        "dep_source": dep_source,
         "display": disp,
         "density": density,
         "centralization": sum(top_score - s for _, s in roster) / denom,
@@ -1020,7 +1095,7 @@ def dependency_card_html(a: dict) -> str:
         '<div class="dep">'
         '<div class="k">🔗 Most depended-on player</div>'
         f'<div class="nm">{esc(name(top["player"]))}</div>'
-        f'<div class="sub">Without them the team\'s passing network loses <b>{top["loss"] * 100:.1f}%</b> of its connectivity '
+        f'<div class="sub">Without them the team\'s passing network loses <b>{top["loss"] * 100:.1f}%</b> of its global network efficiency '
         f'· involved in <b>{top["involved"] * 100:.0f}%</b> of all completed passes.</div>'
         + (f'<div class="sub2">Next: {others}</div>' if others else "")
         + "</div>"
@@ -1687,7 +1762,8 @@ else:
                 st.markdown(f'<div class="note-s">{note}</div>', unsafe_allow_html=True)
     st.caption(
         "Weighted = influence share × the player's own completed outbound passes (rows are sorted by it). "
-        "Dependency = share of the passing network's connectivity (weighted global efficiency) lost if that player is removed."
+        "Dependency = drop in global network efficiency (Floyd–Warshall) when that player is removed"
+        + (", computed by your engine's system_dependency()." if any((x or {}).get("dep_source") == "engine" for x in analyses.values()) else ".")
     )
 
     # Row 4: bottleneck notes, below the networks and tables
