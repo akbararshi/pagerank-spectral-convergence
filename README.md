@@ -9,7 +9,7 @@ To solve this, I designed and engineered an **Adaptive Dynamic PageRank Architec
 ---
 
 ## 🛠️ Project Core Blueprint
-* **Core Innovation:** Formulated a localized logistic decay ceiling ($D_{\text{global}}$) ranging smoothly from 0.85 up to 0.98) to suppress random walk teleportation leaks.
+* **Core Innovation:** Formulated a localized logistic decay ceiling ($D_{\text{global}}$) ranging smoothly from 0.50 up to 0.85 to suppress random walk teleportation leaks.
 * **Engineering & Scalability:** Built synthetic graph topologies to stress-test the model's numerical stability up to **N = 5,000 nodes**.
 * **Interdisciplinary Vision:** Bridged sports network redundancy models directly into **network neuroscience** to simulate targeted network collapse configurations in Alzheimer's disease connectomes.
 * **Technical Stack:** Python, NetworkX, NumPy, Pandas, SciPy, Matplotlib, StatsBombPy API.
@@ -32,29 +32,36 @@ To solve this, I designed and engineered an **Adaptive Dynamic PageRank Architec
 
 ## Project Repository Architecture
 
-```text
+```
 pagerank-spectral-convergence/             <-- Main Workspace Root
 ├── .gitignore                             <-- Git environment exclusion rules
 ├── README.md                              <-- Replication documentation
 ├── requirements.txt                       <-- Python environment requirements
-└── adaptive-pagerank-networks/            <-- Project Core Directory
-    ├── adaptive_dynamic_engine/
-    │   ├── adaptive_football_engine.py    <-- Runs adaptive damping engine for football scenarios
-    │   ├── adaptive_main.py                   
-    │   └── adaptive_pagerank.py           <-- Core adaptive pagerank logic
-    ├── output/                            <-- Analytical payload dumps
-    │   ├── adaptive_experiment_results.json   
-    |   |-- barca_passing_network.pdf
-    │   ├── experiment_results.json            
-    │   ├── football_experimental_results.json 
-    │   ├── scalability_convergence_curves.pdf 
-    │   └── simple_graphs.py                   <-- Synthetic topological loop graphs
-    ├── standard_pagerank/
-    │   ├── standard_main.py                   
-    │   └── standard_pagerank_engine.py    <-- Core baseline pagerank code
-    ├── football_experimental_results.py       
-    ├── generate_plot.py                       
-    └── reproduce.py                       <-- Master runtime orchestrator script
+├── adaptive-pagerank-networks/            <-- Project Core Directory
+│   ├── adaptive_dynamic_engine/           <-- Runs adaptive damping engine for football scenarios
+│   │   ├── adaptive_football_engine.py    
+│   │   ├── adaptive_main.py               
+│   │   └── adaptive_pagerank.py           <-- Core adaptive pagerank mathematical logic
+│   ├── data/                              <-- Primary network datasets
+│   ├── output/                            <-- Analytical payload dumps
+│   │   ├── adaptive_experiment_results.json
+│   │   ├── barca_passing_network.pdf      
+│   │   ├── experiment_results.json        
+│   │   ├── football_experimental_results.json
+│   │   └── scalability_convergence_curves.pdf
+│   ├── standard_pagerank/                 <-- Core baseline pagerank benchmarks
+│   │   ├── standard_main.py               
+│   │   └── standard_pagerank_engine.py    
+│   ├── simple_graphs.py                   <-- Synthetic topological loop graphs (Star/Spider-trap)
+│   ├── football_experimental_results.py   
+│   ├── generate_plot.py                   
+│   └── reproduce.py                       <-- Master runtime orchestrator script
+└── v2-dynamic-football-engine/            <-- Web Application Layer
+    ├── data/                              
+    │   └── fetcher.py                     <-- Dynamic data retrieval stream pipeline
+    └── engine/                            
+        ├── adaptive_football_engine.py    
+        └── app.py                         <-- Streamlit front-end visualization application
 
 ```
 
