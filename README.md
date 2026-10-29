@@ -44,6 +44,7 @@ pagerank-spectral-convergence/             <-- Main Workspace Root
     │   └── adaptive_pagerank.py           <-- Core adaptive pagerank logic
     ├── output/                            <-- Analytical payload dumps
     │   ├── adaptive_experiment_results.json   
+    |   |-- barca_passing_network.pdf
     │   ├── experiment_results.json            
     │   ├── football_experimental_results.json 
     │   ├── scalability_convergence_curves.pdf 

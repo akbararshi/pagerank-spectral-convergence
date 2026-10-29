@@ -17,13 +17,15 @@ def calculate_graph_density(nodes_count, connection_graph):
 def macroscopic_sigmoid_governor(density):
     """
     Routes global edge density through a logistic sigmoid curve.
-    Maps to Equation 6 in the research manuscript.
+    Maps to the updated Equation 6 in the research manuscript.
     """
-    exponent_delta = -10.0 * (density - 0.45)
-    # Protection vector against numerical float underflow/overflow
+    exponent_delta = 12.0 * (density - 0.50)
+    
     exponent_delta = max(-50.0, min(50.0, exponent_delta))
     denominator = 1.0 + math.exp(exponent_delta)
-    return 0.85 + (0.13 / denominator)
+    
+    return 0.50 + (0.35 / denominator)
+
 
 def run_adaptive_power_iteration(nodes_count, connection_graph, max_loops=2000, precision=1e-6):
     """

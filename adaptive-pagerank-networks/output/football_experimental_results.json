@@ -1,61 +1,251 @@
 {
-    "calculated_damping_factor": 0.9768,
-    "structural_nexus_hub": "Xavier Hern\u00e1ndez Creus",
-    "roster_metrics": {
-        "Xavier Hern\u00e1ndez Creus": {
-            "standard_share": 0.1085,
-            "adaptive_score": 0.1868,
-            "dependency_score": 0.2643
+    "2011_UCL_Final": {
+        "metadata": {
+            "edge_density": 0.6364,
+            "calculated_damping_factor": 0.557
         },
-        "Andr\u00e9s Iniesta Luj\u00e1n": {
-            "standard_share": 0.1075,
-            "adaptive_score": 0.1389,
-            "dependency_score": 0.1408
+        "Xavier HernÃ¡ndez Creus": {
+            "standard_share": 0.10845547009875132,
+            "adaptive_score": 0.15144378926827246,
+            "dependency_score": 0.2577601361323918,
+            "betweenness_score": 0.5333333333333333,
+            "eigenvector_score": 0.5030864744353323
         },
-        "Lionel Andr\u00e9s Messi": {
-            "standard_share": 0.1027,
-            "adaptive_score": 0.1291,
-            "dependency_score": 0.1244
+        "Lionel AndrÃ©s Messi Cuccittini": {
+            "standard_share": 0.10271032260814257,
+            "adaptive_score": 0.10714657292544949,
+            "dependency_score": 0.11913215423606806,
+            "betweenness_score": 0.08888888888888889,
+            "eigenvector_score": 0.46661219404853477
         },
-        "Sergio Busquets i Burgos": {
-            "standard_share": 0.1075,
-            "adaptive_score": 0.1049,
-            "dependency_score": 0.0
+        "AndrÃ©s Iniesta LujÃ¡n": {
+            "standard_share": 0.10751956061824341,
+            "adaptive_score": 0.12211481958977781,
+            "dependency_score": 0.17200149357421088,
+            "betweenness_score": 0.17777777777777778,
+            "eigenvector_score": 0.48769692101209133
         },
         "Daniel Alves da Silva": {
-            "standard_share": 0.0852,
-            "adaptive_score": 0.089,
-            "dependency_score": 0.0213
+            "standard_share": 0.0852302375567861,
+            "adaptive_score": 0.08667990067121387,
+            "dependency_score": 0.015506519059885301,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.3063603551627581
         },
-        "Javier Alejandro Mascherano": {
-            "standard_share": 0.0984,
-            "adaptive_score": 0.083,
-            "dependency_score": 0.0
-        },
-        "Gerard Piqu\u00e9 Bernab\u00e9u": {
-            "standard_share": 0.0877,
-            "adaptive_score": 0.0732,
-            "dependency_score": 0.0
+        "Sergio Busquets i Burgos": {
+            "standard_share": 0.10751956061824341,
+            "adaptive_score": 0.10068578869380065,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.27413938853498515
         },
         "Eric-Sylvain Bilal Abidal": {
-            "standard_share": 0.0818,
-            "adaptive_score": 0.0769,
-            "dependency_score": 0.0
+            "standard_share": 0.08178135140700388,
+            "adaptive_score": 0.07677495837698793,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.011111111111111112,
+            "eigenvector_score": 0.16362855882983265
         },
-        "Pedro Eliezer Rodr\u00edguez": {
-            "standard_share": 0.0859,
-            "adaptive_score": 0.0482,
-            "dependency_score": 0.0
+        "Javier Alejandro Mascherano": {
+            "standard_share": 0.09844591301872449,
+            "adaptive_score": 0.09425405166820727,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.15555555555555556,
+            "eigenvector_score": 0.17408370764069084
         },
-        "V\u00edctor Vald\u00e9s Arribas": {
-            "standard_share": 0.0495,
-            "adaptive_score": 0.036,
-            "dependency_score": 0.0
+        "Pedro Eliezer RodrÃ­guez Ledesma": {
+            "standard_share": 0.0858631668071486,
+            "adaptive_score": 0.06340489989814002,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.16638350336787566
         },
-        "David Villa S\u00e1nchez": {
-            "standard_share": 0.0852,
-            "adaptive_score": 0.034,
-            "dependency_score": 0.0
+        "Gerard PiquÃ© BernabÃ©u": {
+            "standard_share": 0.08770583626966284,
+            "adaptive_score": 0.08406837415315684,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.011111111111111112,
+            "eigenvector_score": 0.11164352618708696
+        },
+        "David Villa SÃ¡nchez": {
+            "standard_share": 0.08523023755678612,
+            "adaptive_score": 0.05492490698615448,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.15468271808560824
+        },
+        "VÃ­ctor ValdÃ©s Arribas": {
+            "standard_share": 0.04953834344050728,
+            "adaptive_score": 0.05850193776883899,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.03414334988713905
+        }
+    },
+    "2022_WC_Morocco": {
+        "metadata": {
+            "edge_density": 0.1545,
+            "calculated_damping_factor": 0.8445
+        },
+        "Achraf Hakimi Mouh": {
+            "standard_share": 0.09462953082872551,
+            "adaptive_score": 0.05482255429048084,
+            "dependency_score": 0.1871234941051615,
+            "betweenness_score": 0.3888888888888889,
+            "eigenvector_score": 0.48464841041134005
+        },
+        "Azzedine Ounahi": {
+            "standard_share": 0.12394006201712895,
+            "adaptive_score": 0.05255679809952252,
+            "dependency_score": 0.17942866822815975,
+            "betweenness_score": 0.3666666666666667,
+            "eigenvector_score": 0.49443299933016105
+        },
+        "Hakim Ziyech": {
+            "standard_share": 0.06885319125500435,
+            "adaptive_score": 0.0602266140185439,
+            "dependency_score": 0.12855573268557255,
+            "betweenness_score": 0.2111111111111111,
+            "eigenvector_score": 0.533777469808306
+        },
+        "Sofiane Boufal": {
+            "standard_share": 0.14012014025751604,
+            "adaptive_score": 0.19844300115141839,
+            "dependency_score": 0.09504541433163399,
+            "betweenness_score": 0.2916666666666667,
+            "eigenvector_score": 0.2728233057030925
+        },
+        "Yahia Attiyat allah": {
+            "standard_share": 0.10108795703931203,
+            "adaptive_score": 0.1816103928401421,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.008333333333333333,
+            "eigenvector_score": 0.16495733052728268
+        },
+        "Sofyan Amrabat": {
+            "standard_share": 0.09386055821280047,
+            "adaptive_score": 0.03304542932407654,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.19192236060507964
+        },
+        "Youssef En-Nesyri": {
+            "standard_share": 0.0894362809624881,
+            "adaptive_score": 0.0,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.13661955459497196
+        },
+        "Yassine Bounou": {
+            "standard_share": 0.06813109490219259,
+            "adaptive_score": 0.19381402944265755,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.04166666666666667,
+            "eigenvector_score": 0.15796695456997403
+        },
+        "Jawad El Yamiq": {
+            "standard_share": 0.062025292981864766,
+            "adaptive_score": 0.2041999413249862,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.011111111111111112,
+            "eigenvector_score": 0.16304723158391268
+        },
+        "Selim Amallah": {
+            "standard_share": 0.09367089279223288,
+            "adaptive_score": 0.021281239508171977,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.13195988830274963
+        },
+        "Walid Cheddira": {
+            "standard_share": 0.06424499875073436,
+            "adaptive_score": 0.0,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.09818145126558123
+        }
+    },
+    "2022_WC_Argentina": {
+        "metadata": {
+            "edge_density": 0.4182,
+            "calculated_damping_factor": 0.7546
+        },
+        "Enzo Fernandez": {
+            "standard_share": 0.11482617331365162,
+            "adaptive_score": 0.16267736036626287,
+            "dependency_score": 0.10999345150205261,
+            "betweenness_score": 0.22222222222222224,
+            "eigenvector_score": 0.45056337476234154
+        },
+        "Rodrigo Javier De Paul": {
+            "standard_share": 0.09126930635607475,
+            "adaptive_score": 0.12197815843247031,
+            "dependency_score": 0.08909601253641244,
+            "betweenness_score": 0.2,
+            "eigenvector_score": 0.43573960801227596
+        },
+        "Lionel AndrÃ©s Messi Cuccittini": {
+            "standard_share": 0.09354271595923237,
+            "adaptive_score": 0.09262027497284443,
+            "dependency_score": 0.02597145339930649,
+            "betweenness_score": 0.044444444444444446,
+            "eigenvector_score": 0.37986278069750196
+        },
+        "NicolÃ¡s HernÃ¡n Otamendi": {
+            "standard_share": 0.10275168383606569,
+            "adaptive_score": 0.14443195712586399,
+            "dependency_score": 0.08874658617159839,
+            "betweenness_score": 0.16111111111111112,
+            "eigenvector_score": 0.3258139100167272
+        },
+        "Cristian Gabriel Romero": {
+            "standard_share": 0.06138049803376512,
+            "adaptive_score": 0.11507977764402663,
+            "dependency_score": 0.040802530710823466,
+            "betweenness_score": 0.03333333333333333,
+            "eigenvector_score": 0.28418383520911755
+        },
+        "Alexis Mac Allister": {
+            "standard_share": 0.11262047407522151,
+            "adaptive_score": 0.08264019300209854,
+            "dependency_score": 0.03712978503204414,
+            "betweenness_score": 0.17777777777777778,
+            "eigenvector_score": 0.28925501636319384
+        },
+        "NicolÃ¡s Alejandro Tagliafico": {
+            "standard_share": 0.07970641335303576,
+            "adaptive_score": 0.09433504966666109,
+            "dependency_score": 0.005863972570920282,
+            "betweenness_score": 0.1,
+            "eigenvector_score": 0.2055848559900572
+        },
+        "JuliÃ¡n Ãlvarez": {
+            "standard_share": 0.10275168383606569,
+            "adaptive_score": 0.05128022956882297,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.1837373331540041
+        },
+        "Nahuel Molina Lucero": {
+            "standard_share": 0.07028492497849939,
+            "adaptive_score": 0.05281967203391434,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.233567025493325
+        },
+        "Ãngel FabiÃ¡n Di MarÃ­a HernÃ¡ndez": {
+            "standard_share": 0.08384521962963191,
+            "adaptive_score": 0.04733948161110538,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.19391891658240767
+        },
+        "Marcos Javier AcuÃ±a": {
+            "standard_share": 0.08702090662875644,
+            "adaptive_score": 0.03479784557592955,
+            "dependency_score": 0.0,
+            "betweenness_score": 0.0,
+            "eigenvector_score": 0.15511816242376222
         }
     }
 }
