@@ -105,6 +105,12 @@ try:
     # from the project root added to sys.path above. This binds the function
     # directly in app.py's module scope for analyze_team().
     from data.fetcher import get_match_passing_matrix
+    # fetcher.py references these modules in the function shown in your screenshot.
+    # Make them available in that function's own module namespace without changing fetcher.py.
+    _fetcher_globals = getattr(get_match_passing_matrix, "__globals__", {})
+    _fetcher_globals.setdefault("np", np)
+    _fetcher_globals.setdefault("pd", pd)
+    _fetcher_globals.setdefault("sb", sb)
 except ImportError as _import_exc:
     # Streamlit Cloud redacts error messages, so show what is actually wrong right in the page.
     st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
