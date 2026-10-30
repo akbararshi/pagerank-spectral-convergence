@@ -91,29 +91,7 @@ def _find_importable_module(candidates):
     raise ModuleNotFoundError(f"Could not find an engine module; tried: {', '.join(tried)}")
 
 
-try:
-    _engine = _find_importable_module(
-        ("engine.adaptive_football_engine", "adaptive_football_engine", "engine.adaptive_pagerank", "adaptive_pagerank")
-    )
-    # Inject NumPy for the supplied core snippet if it references np without importing it.
-    _engine.__dict__.setdefault("np", np)
-    # The installed engine may not expose sports_adaptive_pagerank. In that case
-    # the app uses the compatible local implementation below and leaves the core untouched.
-    _engine_pagerank = getattr(_engine, "sports_adaptive_pagerank", None)
-    system_dependency = getattr(_engine, "system_dependency", None)
-    _fetcher = _find_module(("data.fetcher", "fetcher"), "get_match_passing_matrix")
-    get_match_passing_matrix = _fetcher.get_match_passing_matrix
-except ImportError as _import_exc:
-    # Streamlit Cloud redacts error messages, so show what is actually wrong right in the page.
-    st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
-    st.error(f"Couldn't import your engine/data modules: {type(_import_exc).__name__}: {_import_exc}")
-    st.write("**App folder:**", str(APP_DIR))
-    st.write("**Files next to app.py:**", sorted(os.listdir(APP_DIR))[:40])
-    st.write("**Files in the parent folder:**", sorted(os.listdir(APP_DIR.parent))[:40])
-    st.caption("Fix: make sure your engine file and data/fetcher.py are committed and pushed, and that the names being "
-               "imported exist in them. Remove this diagnostic before going public.")
-    st.stop()
-
+from adaptive_football_engine import sports_adaptive_pagerank, system_dependency, filter_and_scale_telemetry
 st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
 
 
