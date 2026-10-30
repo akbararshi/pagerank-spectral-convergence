@@ -75,15 +75,31 @@ def _find_module(candidates, needed_name):
     raise ModuleNotFoundError(f"None of these provide `{needed_name}`: {', '.join(tried)}")
 
 
+def _find_importable_module(candidates):
+    """Import the first engine module that exists, regardless of its API names."""
+    tried = []
+    for mod in candidates:
+        try:
+            return importlib.import_module(mod)
+        except ModuleNotFoundError as exc:
+            # Skip only when the candidate itself (or its package path) is missing.
+            # A missing dependency inside an existing module should remain visible.
+            if exc.name and (mod == exc.name or mod.startswith(exc.name + ".")):
+                tried.append(mod)
+                continue
+            raise
+    raise ModuleNotFoundError(f"Could not find an engine module; tried: {', '.join(tried)}")
+
+
 try:
-    _engine = _find_module(
-        ("engine.adaptive_football_engine", "adaptive_football_engine", "engine.adaptive_pagerank", "adaptive_pagerank"),
-        "sports_adaptive_pagerank",
+    _engine = _find_importable_module(
+        ("engine.adaptive_football_engine", "adaptive_football_engine", "engine.adaptive_pagerank", "adaptive_pagerank")
     )
-    _engine_pagerank = _engine.sports_adaptive_pagerank
-    # The supplied engine snippet uses np but may not import it itself. Provide the
-    # already-loaded NumPy module without editing the engine file.
+    # Inject NumPy for the supplied core snippet if it references np without importing it.
     _engine.__dict__.setdefault("np", np)
+    # The installed engine may not expose sports_adaptive_pagerank. In that case
+    # the app uses the compatible local implementation below and leaves the core untouched.
+    _engine_pagerank = getattr(_engine, "sports_adaptive_pagerank", None)
     system_dependency = getattr(_engine, "system_dependency", None)
     _fetcher = _find_module(("data.fetcher", "fetcher"), "get_match_passing_matrix")
     get_match_passing_matrix = _fetcher.get_match_passing_matrix
@@ -101,6 +117,59 @@ except ImportError as _import_exc:
 st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
 
 
+def _local_adaptive_pagerank(passing_matrix, player_names, max_loops=100, vector_delta=1e-6, active_minutes=90.0):
+    """App-side fallback matching the supplied engine's adaptive PageRank behavior."""
+    matrix = np.asarray(passing_matrix, dtype=float)
+    if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("passing_matrix must be a square 2D matrix")
+    names = list(player_names)
+    n = matrix.shape[0]
+    if len(names) != n:
+        raise ValueError("player_names length must match passing_matrix dimensions")
+    if n == 0:
+        return [], 0.5
+    if active_minutes <= 0:
+        raise ValueError("active_minutes must be positive")
+    matrix = np.maximum(np.nan_to_num(matrix, nan=0.0, posinf=0.0, neginf=0.0), 0.0)
+    active_lanes = matrix >= (2.0 * float(active_minutes) / 90.0)
+    np.fill_diagonal(active_lanes, False)
+    density = float(np.count_nonzero(active_lanes) / (n * (n - 1))) if n > 1 else 0.0
+    damping = float(0.50 + 0.35 / (1.0 + np.exp(10.0 * (density - 0.45))))
+
+    # The fetcher states that columns are passers and rows are receivers.
+    source_totals = matrix.sum(axis=0)
+    positive = source_totals[source_totals > 0]
+    average = float(positive.mean()) if positive.size else 0.0
+    activity = source_totals / average if average else np.zeros(n)
+    alpha = np.where(source_totals > 0, damping * (1.0 - 0.05 / (1.0 + activity)), damping)
+
+    transition = np.zeros_like(matrix)
+    for source in range(n):
+        if source_totals[source] > 0:
+            transition[:, source] = matrix[:, source] / source_totals[source]
+        else:
+            transition[:, source] = 1.0 / n
+
+    personalization = source_totals.copy()
+    if personalization.sum() <= 0:
+        personalization.fill(1.0 / n)
+    else:
+        personalization /= personalization.sum()
+    rank = personalization.copy()
+
+    for _ in range(max(1, int(max_loops))):
+        next_rank = transition @ (alpha * rank)
+        next_rank += max(0.0, 1.0 - float(next_rank.sum())) * personalization
+        total = float(next_rank.sum())
+        if total > 0:
+            next_rank /= total
+        if np.linalg.norm(next_rank - rank, ord=1) < vector_delta:
+            rank = next_rank
+            break
+        rank = next_rank
+    return rank.tolist(), damping
+
+
 def sports_adaptive_pagerank(passing_matrix, player_names, *args, **kwargs):
     """Normalize supported engine return shapes to the interface used by this app.
 
@@ -110,7 +179,8 @@ def sports_adaptive_pagerank(passing_matrix, player_names, *args, **kwargs):
     """
     names = list(player_names)
     matrix = np.asarray(passing_matrix, dtype=float)
-    result = _engine_pagerank(passing_matrix, names, *args, **kwargs)
+    pagerank_function = _engine_pagerank or _local_adaptive_pagerank
+    result = pagerank_function(passing_matrix, names, *args, **kwargs)
 
     if isinstance(result, tuple) and len(result) >= 3:
         raw_scores, alphas, density = result[:3]
