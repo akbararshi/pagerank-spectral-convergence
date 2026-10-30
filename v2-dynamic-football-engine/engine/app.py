@@ -80,8 +80,11 @@ try:
         ("engine.adaptive_football_engine", "adaptive_football_engine", "engine.adaptive_pagerank", "adaptive_pagerank"),
         "sports_adaptive_pagerank",
     )
-    sports_adaptive_pagerank = _engine.sports_adaptive_pagerank
-    system_dependency = getattr(_engine, "system_dependency", None)  # your own dependency function, if the engine has one
+    _engine_pagerank = _engine.sports_adaptive_pagerank
+    # The supplied engine snippet uses np but may not import it itself. Provide the
+    # already-loaded NumPy module without editing the engine file.
+    _engine.__dict__.setdefault("np", np)
+    system_dependency = getattr(_engine, "system_dependency", None)
     _fetcher = _find_module(("data.fetcher", "fetcher"), "get_match_passing_matrix")
     get_match_passing_matrix = _fetcher.get_match_passing_matrix
 except ImportError as _import_exc:
@@ -96,6 +99,53 @@ except ImportError as _import_exc:
     st.stop()
 
 st.set_page_config(page_title="PageRank Match Intelligence", layout="wide", page_icon="⚽")
+
+
+def sports_adaptive_pagerank(passing_matrix, player_names, *args, **kwargs):
+    """Normalize supported engine return shapes to the interface used by this app.
+
+    The supplied engine returns (rank_vector, damping_coefficient); newer variants
+    may return (name_to_score, alphas, density). The UI and visual design do not
+    depend on which of those core-engine interfaces is installed.
+    """
+    names = list(player_names)
+    matrix = np.asarray(passing_matrix, dtype=float)
+    result = _engine_pagerank(passing_matrix, names, *args, **kwargs)
+
+    if isinstance(result, tuple) and len(result) >= 3:
+        raw_scores, alphas, density = result[:3]
+        if isinstance(raw_scores, dict):
+            scores = {name: float(raw_scores[name]) for name in names}
+        else:
+            vector = np.asarray(raw_scores, dtype=float).reshape(-1)
+            if vector.size != len(names):
+                raise ValueError("Engine PageRank result length does not match player_names")
+            scores = dict(zip(names, vector.tolist()))
+        return scores, alphas, float(density)
+
+    if isinstance(result, tuple) and len(result) == 2:
+        raw_scores, damping = result
+    else:
+        raw_scores, damping = result, 0.85
+
+    if isinstance(raw_scores, dict):
+        scores = {name: float(raw_scores[name]) for name in names}
+    else:
+        vector = np.asarray(raw_scores, dtype=float).reshape(-1)
+        if vector.size != len(names):
+            raise ValueError("Engine PageRank result length does not match player_names")
+        scores = dict(zip(names, vector.tolist()))
+
+    # Match the density threshold used by the supplied engine's adaptive damping.
+    n = matrix.shape[0]
+    if n > 1:
+        active = matrix >= (2.0 * float(kwargs.get("active_minutes", 90.0)) / 90.0)
+        np.fill_diagonal(active, False)
+        density = float(np.count_nonzero(active) / (n * (n - 1)))
+    else:
+        density = 0.0
+    return scores, damping, density
+
 
 # --- CONFIG ---
 # If passing_matrix[i, j] = passes FROM i TO j, outbound volume is the row sum (axis=1).
@@ -552,15 +602,18 @@ def _total_efficiency(W: np.ndarray) -> float:
     return float((1.0 / D[off]).sum())  # unreachable pairs (inf) contribute 0
 
 
-# Your engine's system_dependency(passing_matrix, player_names) returns the % drop in global network efficiency when each
-# player is removed. Set this to False if it returns fractions (0.12) instead of percentages (12.0).
-SYSTEM_DEPENDENCY_IS_PERCENT = True
+# The supplied engine returns fractional efficiency loss (for example 0.12).
+SYSTEM_DEPENDENCY_IS_PERCENT = False
 
 
 def _dependency_scores(raw, players) -> dict:
     """Turn whatever system_dependency() returns into {player: value}."""
-    if isinstance(raw, tuple) and raw and isinstance(raw[0], (dict, list, tuple, np.ndarray)):
-        raw = raw[0]  # (scores, extra) -> scores
+    if isinstance(raw, tuple):
+        # Supplied engine shape: (most_dependent_player, max_loss, score_dict).
+        if len(raw) >= 3 and isinstance(raw[2], dict):
+            raw = raw[2]
+        elif raw and isinstance(raw[0], (dict, list, tuple, np.ndarray)):
+            raw = raw[0]  # alternate shape: (scores, extra)
     if isinstance(raw, dict):
         return {k: float(v) for k, v in raw.items()}
     seq = list(raw)
