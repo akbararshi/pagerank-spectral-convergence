@@ -3,7 +3,7 @@ def sports_adaptive_pagerank(passing_matrix, player_names, max_loops=100, vector
     Custom vector matrix PageRank implementation. Dynamically scales the 
     damping factor upward based on graph density to prevent playmaking dilution.
     """
-    P = np.array(passing_matrix, dtype=float)
+    P = np.array(passing_matrix, dtype=np.float64)
     n = P.shape[0]  # Safe integer extraction from tuple dimension boundary
     
     normalized_P = (P / active_minutes) * 90.0
