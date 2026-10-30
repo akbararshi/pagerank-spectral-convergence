@@ -1,4 +1,4 @@
-def adaptive_pagerank(passing_matrix, player_names, max_loops=100, vector_delta=1e-6, active_minutes=90.0):
+def sports_adaptive_pagerank(passing_matrix, player_names, max_loops=100, vector_delta=1e-6, active_minutes=90.0):
     """
     Custom vector matrix PageRank implementation. Dynamically scales the 
     damping factor upward based on graph density to prevent playmaking dilution.
