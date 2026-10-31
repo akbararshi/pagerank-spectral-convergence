@@ -4,7 +4,7 @@ Developed by **Akbar Arshi**
 ## 🚀 Executive Summary
 Traditional graph algorithms (like Google’s baseline PageRank) fail when scaled down to dense, multi-agent sports environments because they suffer from **possession-recycling bias**. They mistake safe, low-risk horizontal passing loops along a defensive backline for true structural prestige. This misallocates mathematical importance away from high-impact vertical playmakers operating in contested central zones.
 
-To solve this, I designed and engineered an **Adaptive Dynamic PageRank Architecture**. My framework introduces a **Macroscopic Sigmoid Governor** to scale teleportation thresholds dynamically based on real-time edge density, paired with an **Absolute Outbound Volume Weighting Matrix** to isolate true playmaker hubs. Tested against empirical open-play event streams (StatsBomb dataset) from the 2011 UEFA Champions League Final, this model successfully isolated the team's mastermind nucleus, backed by a modified **Floyd-Warshall node-deletion sequence** proving structural dependency polarity.
+To solve this, I designed and engineered an **Adaptive Dynamic PageRank Architecture**. My framework introduces a **Macroscopic Sigmoid Governor** to scale teleportation thresholds dynamically based on real-time edge density, paired with an **Absolute Outbound Volume Weighting Matrix** to isolate true playmaker hubs. Tested against empirical open-play event streams (StatsBomb dataset) from the 2011 UEFA Champions League Final, 2022 FIFA World Cup Quarter-Finals, and 2022 FIFA World Cup Final, this model successfully isolated the team's mastermind nucleus, backed by a modified **Floyd-Warshall node-deletion sequence** proving structural dependency polarity.
 
 ---
 
