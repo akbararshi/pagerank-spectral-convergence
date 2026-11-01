@@ -1,5 +1,6 @@
 # Beyond 0.85: Adaptive PageRank Architecture for Multi-Agent Flow Networks
 Developed by **Akbar Arshi**
+Research Paper Pre-Print: https://doi.org/10.5281/zenodo.23840399
 
 ## 🚀 Executive Summary
 Traditional graph algorithms (like Google’s baseline PageRank) fail when scaled down to dense, multi-agent sports environments because they suffer from **possession-recycling bias**. They mistake safe, low-risk horizontal passing loops along a defensive backline for true structural prestige. This misallocates mathematical importance away from high-impact vertical playmakers operating in contested central zones.
