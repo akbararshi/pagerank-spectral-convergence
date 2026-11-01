@@ -83,7 +83,7 @@ python reproduce.py
 
 ## System Processing Workflow
 
-1. **Console Allocation Tables:** The script builds adjacent passing matrices using public 2011 UEFA Champions League dataset streams and prints comparative baseline tables.
+1. **Console Allocation Tables:** The script builds adjacent passing matrices using data streams from the selected matches and prints comparative baseline tables.
 2. **Dynamic Data Tracking:** The system solves the Sigmoid Governor bounds, outputting player shares and dependency rankings directly to `output/football_experimental_results.json`.
 3. **Visualization Generation:** The script triggers the visualization layout layer, exporting performance scalability tracking data to `output/scalability_convergence_curves.pdf`.
 
