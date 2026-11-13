@@ -14,7 +14,7 @@ To solve this, I designed and engineered an **Adaptive Dynamic PageRank Architec
 ## 🛠️ Project Core Blueprint
 * **Core Innovation:** Formulated a localized logistic decay ceiling ($D_{\text{global}}$) ranging smoothly from 0.50 up to 0.85 to suppress random walk teleportation leaks.
 * **Engineering & Scalability:** Built synthetic graph topologies to stress-test the model's numerical stability up to **N = 5,000 nodes**.
-* **Interdisciplinary Vision:** Bridged sports network redundancy models directly into **network neuroscience** to simulate targeted network collapse configurations in Alzheimer's disease connectomes.
+* **Interdisciplinary Vision:** Planning to bridge sports network redundancy models directly into **network neuroscience** to simulate targeted network collapse configurations in Alzheimer's disease connectomes.
 * **Technical Stack:** Python, NetworkX, NumPy, Pandas, SciPy, Matplotlib, StatsBombPy API.
 
 ---
