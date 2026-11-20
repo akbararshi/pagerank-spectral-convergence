@@ -1,4 +1,7 @@
 import json
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from standard_pagerank_engine import run_matrix_power_iteration
 from output.simple_graphs import spider_trap, star_graph 
 
@@ -52,9 +55,15 @@ def execute_experiments():
 
 
 
-    # 4. Save the multi-dimensional results to JSON
-    with open("output/experiment_results.json", "w") as storage_file:
+        # 4. Save the multi-dimensional results to JSON
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    output_path = os.path.join(base_dir, "output", "experiment_results.json")
+    with open(output_path, "w") as storage_file:
         json.dump(metrics_output, storage_file, indent=4)
+
+    print("\n[Success] Scaled simulation data logged to output/experiment_results.json")
+
+
         
 
     print("\n[Success] Scaled simulation data logged to output/experiment_results.json")
