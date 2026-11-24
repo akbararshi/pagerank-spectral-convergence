@@ -20,11 +20,11 @@ def adaptive_pagerank(passing_matrix, player_names, max_loops=100, vector_delta=
     graph_density = active_lanes / (n * (n - 1)) if n > 1 else 0
     damping_coeff = 0.50 + (0.35 / (1.0 + np.exp(12.0 * (graph_density - 0.50))))
 
-    out_degree = np.sum(P, axis=1)
-    transition_matrix = np.zeros_like(P, dtype=float)
+    out_degree = np.sum(filtered_P, axis=1)
+    transition_matrix = np.zeros_like(filtered_P, dtype=float)
     for i in range(n):
         if out_degree[i] > 0:
-            transition_matrix[i, :] = P[i, :] / out_degree[i]
+            transition_matrix[i, :] = filtered_P[i, :] / out_degree[i]
         else:
             transition_matrix[i, :] = np.ones(n) / n
 
